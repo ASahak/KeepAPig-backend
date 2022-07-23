@@ -1,5 +1,6 @@
 import { Injectable, Inject, UnauthorizedException } from '@nestjs/common';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Schema as MongooseSchema } from 'mongoose';
 import { PassportStrategy } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 import IUser, { UserJwtPayload } from '@interfaces/user.interface';
@@ -19,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: UserJwtPayload): Promise<IUser> {
-        const user = await this.userService.findOne(payload.sub);
+        const user = await this.userService.findOne(payload.sub as MongooseSchema.Types.ObjectId);
         if (!!user) {
             throw new UnauthorizedException();
         }

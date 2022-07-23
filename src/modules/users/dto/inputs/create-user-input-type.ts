@@ -13,5 +13,5 @@ export default class UserInput {
     readonly password: string;
 
     @Field()
-    readonly role: USER_ROLES;
+    readonly role: keyof typeof USER_ROLES;
 }

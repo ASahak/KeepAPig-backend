@@ -1,6 +1,7 @@
 import { IsEmail, IsNotEmpty, MinLength, IsString, Matches } from 'class-validator';
 import { ObjectType, Field } from '@nestjs/graphql';
-import { USER_ROLES } from "@common/enums";
+import { Schema as MongooseSchema } from 'mongoose';
+import { USER_ROLES } from '@common/enums';
 
 @ObjectType()
 export default class CreateUserDto {
@@ -22,5 +23,32 @@ export default class CreateUserDto {
     @IsNotEmpty()
     @Matches(`^${Object.values(USER_ROLES).filter(v => typeof v !== 'number').join('|')}$`, 'i')
     @Field()
-    readonly role: USER_ROLES;
+    readonly role: keyof typeof USER_ROLES;
+}
+
+
+@ObjectType()
+export class CreateGoogleUserDto {
+    @IsNotEmpty()
+    @Field()
+    readonly _id: MongooseSchema.Types.ObjectId | string;
+
+    @IsNotEmpty()
+    @IsEmail()
+    @Field()
+    readonly email: string;
+
+    @IsNotEmpty()
+    @IsString()
+    @Field()
+    readonly fullName: string;
+
+    @IsNotEmpty()
+    @Field()
+    readonly avatar: string;
+
+    @IsNotEmpty()
+    @Matches(`^${Object.values(USER_ROLES).filter(v => typeof v !== 'number').join('|')}$`, 'i')
+    @Field()
+    readonly role: keyof typeof USER_ROLES;
 }

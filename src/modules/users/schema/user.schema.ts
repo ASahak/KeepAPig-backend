@@ -28,8 +28,12 @@ export class User extends Document {
     password: string;
 
     @Field(() => String)
+    @Prop({ required: false })
+    avatar: string;
+
+    @Field(() => String)
     @Prop({ default: USER_ROLES.USER, enum: USER_ROLES, required: true })
-    role: USER_ROLES;
+    role: keyof typeof USER_ROLES;
 }
 
 export type UserDocument = User & Document;
