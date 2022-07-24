@@ -12,27 +12,26 @@ import AllExceptionsFilter from '@filters/exeption';
 import GraphqlConfigService from '@config/graphql.config';
 
 @Module({
-    imports: [
-        GraphQLModule.forRootAsync({
-            driver: ApolloDriver,
-            useClass: GraphqlConfigService,
-        }),
-        ConfigModule.forRoot({ isGlobal: true }),
-        MongooseModule.forRoot(process.env.MONGODB_CONNECTION_STRING, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        }),
-        AuthModule,
-        UsersModule,
-    ],
-    controllers: [AppController],
-    providers: [
-        AppService,
-        {
-            provide: APP_FILTER,
-            useClass: AllExceptionsFilter,
-        }
-    ],
+  imports: [
+    GraphQLModule.forRootAsync({
+      driver: ApolloDriver,
+      useClass: GraphqlConfigService,
+    }),
+    ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRoot(process.env.MONGODB_CONNECTION_STRING, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }),
+    AuthModule,
+    UsersModule,
+  ],
+  controllers: [AppController],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+  ],
 })
-export class AppModule {
-}
+export class AppModule {}

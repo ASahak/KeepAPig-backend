@@ -6,10 +6,11 @@ import { USER_ROLES } from '@common/enums';
 import { GoogleIUser } from '@interfaces/user.interface';
 
 @Injectable()
-export default class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-  constructor(
-    @Inject(ConfigService) config: ConfigService,
-  ) {
+export default class GoogleStrategy extends PassportStrategy(
+  Strategy,
+  'google',
+) {
+  constructor(@Inject(ConfigService) config: ConfigService) {
     super({
       clientID: config.get('google.clientID'),
       clientSecret: config.get('google.clientSecret'),
@@ -18,7 +19,12 @@ export default class GoogleStrategy extends PassportStrategy(Strategy, 'google')
     });
   }
 
-  async validate(token: string, refreshToken: string, profile: any, done: VerifyCallback): Promise<any> {
+  async validate(
+    token: string,
+    refreshToken: string,
+    profile: any,
+    done: VerifyCallback,
+  ): Promise<any> {
     const { name, emails, photos } = profile;
     const user: GoogleIUser = {
       _id: profile.id,
@@ -27,7 +33,7 @@ export default class GoogleStrategy extends PassportStrategy(Strategy, 'google')
       avatar: photos[0].value,
       token: token,
       role: USER_ROLES.USER,
-    }
+    };
     done(null, user);
   }
 }

@@ -6,7 +6,7 @@ export class InputError {
   @Field()
   field: string;
 
-  @Field((_type) => [String])
+  @Field(() => [String])
   messages: string[];
 }
 
@@ -14,7 +14,7 @@ export class InputError {
   implements: [ErrorResponse],
 })
 export class InvalidInputError extends ErrorResponse {
-  @Field((_type) => [InputError])
+  @Field(() => [InputError])
   errors: InputError[];
 
   constructor(errors: InputError[]) {

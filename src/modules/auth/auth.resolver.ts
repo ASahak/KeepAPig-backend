@@ -10,29 +10,28 @@ import IUser from '@interfaces/user.interface';
 
 @Resolver('Auth')
 export default class AuthResolver {
-
   constructor(
     @Inject(AuthService)
     private readonly authService: AuthService,
-  ) {
-  }
+  ) {}
 
-  @Mutation((_returns) => AuthUserResponse, { name: 'createdUser' })
+  @Mutation(() => AuthUserResponse, { name: 'createdUser' })
   registerUser(
     @Args('data') user: CreateUserInput,
   ): Observable<AuthUserResponse> {
     return this.authService.create(user).pipe(
-      switchMap(result => {
-        return this.authService.signInToken(result as IUser).pipe(
-            map((authUser: AuthUserResponse) => authUser),
-          );
-      })
-    )
+      switchMap((result) => {
+        return this.authService
+          .signInToken(result as IUser)
+          .pipe(map((authUser: AuthUserResponse) => authUser));
+      }),
+    );
   }
 
   @UseGuards(AuthGuard('local'))
   @Mutation(() => User)
-  async login(@Request() req) { // todo
+  async login(@Request() req) {
+    // todo
     return this.authService.loginWithCredentials(req.user);
   }
 }
