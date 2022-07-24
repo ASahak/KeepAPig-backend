@@ -5,19 +5,16 @@ import UsersService from '@modules/users/users.service';
 
 @Resolver('User')
 export default class UsersResolver {
+  constructor(
+    @Inject(UsersService)
+    private readonly usersService: UsersService,
+  ) {}
 
-    constructor(
-        @Inject(UsersService)
-        private readonly usersService: UsersService,
-        ) {
-    }
-
-    @Query(returns => [User], { name: 'user', nullable: false })
-    getUser(): object {
-        return {
-            id: 1,
-            firstName: 'AAA'
-        };
-    }
-
+  @Query(() => [User], { name: 'user', nullable: false })
+  getUser(): object {
+    return {
+      id: 1,
+      firstName: 'AAA',
+    };
+  }
 }

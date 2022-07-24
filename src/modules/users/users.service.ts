@@ -5,13 +5,11 @@ import { UserDocument, User } from './schema/user.schema';
 
 @Injectable()
 export default class UsersService {
-    constructor(
-        @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-    ) {}
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+  ) {}
 
-
-    findOne(id: MongooseSchema.Types.ObjectId) {
-        return this.userModel.findById(id);
-    }
+  findOne(id: MongooseSchema.Types.ObjectId) {
+    return this.userModel.findById(id);
+  }
 }
-
