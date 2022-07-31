@@ -1,9 +1,12 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Inject, Injectable } from '@nestjs/common';
+import * as passport from 'passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
 import { USER_ROLES } from '@common/enums';
 import { GoogleIUser } from '@interfaces/user.interface';
+
+type GoogleBodyType<T> = T & { token: string, role: keyof typeof USER_ROLES };
 
 @Injectable()
 export default class GoogleStrategy extends PassportStrategy(
@@ -17,6 +20,15 @@ export default class GoogleStrategy extends PassportStrategy(
       callbackURL: config.get('google.callbackURL'),
       scope: ['email', 'profile'],
     });
+    passport.use(this);
+
+    passport.serializeUser((user, done) => {
+      done(null, user);
+    });
+
+    passport.deserializeUser((user, done) => {
+      done(null, user);
+    });
   }
 
   async validate(
@@ -26,8 +38,8 @@ export default class GoogleStrategy extends PassportStrategy(
     done: VerifyCallback,
   ): Promise<any> {
     const { name, emails, photos } = profile;
-    const user: GoogleIUser = {
-      _id: profile.id,
+    const user: GoogleBodyType<GoogleIUser> = {
+      id: profile.id,
       email: emails[0].value,
       fullName: name.givenName + ' ' + name.familyName,
       avatar: photos[0].value,

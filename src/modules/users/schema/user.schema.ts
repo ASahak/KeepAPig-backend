@@ -4,31 +4,46 @@ import { ObjectType, Field, ID } from '@nestjs/graphql';
 import * as bcrypt from 'bcrypt';
 import { USER_ROLES } from '@common/enums';
 import { PASSWORD_SALT_ROUNDS } from '@common/constants';
+import { GoogleIUser } from '@interfaces/user.interface';
+
+@ObjectType()
+class BasicUserModel extends Document {
+  @Field(() => String)
+  @Prop({ required: true })
+  fullName: string;
+
+  @Field(() => String)
+  @Prop({ required: true, unique: true })
+  email: string;
+}
+
+@ObjectType()
+class GoogleModel extends BasicUserModel {
+  @Field(() => String)
+  @Prop({ required: true })
+  id: string;
+
+  @Field(() => String)
+  @Prop({ required: true })
+  avatar: string;
+}
 
 @ObjectType()
 @Schema({
   versionKey: false,
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 })
-export class User extends Document {
+export class User extends BasicUserModel {
   @Field(() => ID)
   _id: MongooseSchema.Types.ObjectId;
 
   @Field(() => String)
   @Prop({ required: true })
-  fullName: string;
-
-  @Field(() => String)
-  @Prop({ required: true })
-  email: string;
-
-  @Field(() => String)
-  @Prop({ required: true })
   password: string;
 
-  @Field(() => String)
-  @Prop({ required: false })
-  avatar: string;
+  @Field(() => GoogleModel)
+  @Prop({ type: Object })
+  google: GoogleIUser;
 
   @Field(() => String)
   @Prop({
