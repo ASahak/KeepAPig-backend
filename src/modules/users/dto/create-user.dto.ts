@@ -41,7 +41,11 @@ export default class CreateUserDto {
 export class CreateGoogleUserDto {
   @IsNotEmpty()
   @Field()
-  readonly _id: MongooseSchema.Types.ObjectId | string;
+  readonly _id?: MongooseSchema.Types.ObjectId | string;
+
+  @IsNotEmpty()
+  @Field(() => String)
+  readonly id: string;
 
   @IsNotEmpty()
   @IsEmail()

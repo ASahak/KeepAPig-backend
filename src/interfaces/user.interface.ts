@@ -10,12 +10,10 @@ export default interface IUser {
 }
 
 export interface GoogleIUser {
-  _id: MongooseSchema.Types.ObjectId | string;
+  id: string;
   email: string;
   fullName: string;
   avatar: string;
-  token: string;
-  role: keyof typeof USER_ROLES;
 }
 
 export type UserPayloadTypes = GoogleIUser & IUser;

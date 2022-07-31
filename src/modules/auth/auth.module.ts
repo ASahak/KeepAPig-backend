@@ -11,13 +11,16 @@ import GoogleConfig from '@config/google.config';
 import JwtConfig from '@config/jwt.config';
 import UsersService from '@modules/users/users.service';
 import GoogleStrategy from '@modules/auth/strategies/google.strategy';
-import GoogleOauthController from '@modules/auth/oauth/google/google-oauth.controller';
+import GoogleAuthResolver from '@modules/auth/oauth/google/google-auth.resolver';
+import SessionSerializer from '@modules/auth/serializers/session.serializer';
 
 @Module({
   imports: [
     ConfigModule.forFeature(GoogleConfig),
     ConfigModule.forFeature(JwtConfig),
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([
+        { name: User.name, schema: UserSchema },
+    ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       inject: [ConfigService],
@@ -32,11 +35,13 @@ import GoogleOauthController from '@modules/auth/oauth/google/google-oauth.contr
   providers: [
     AuthService,
     AuthResolver,
+    GoogleAuthResolver,
     JwtStrategy,
     GoogleStrategy,
     UsersService,
+    SessionSerializer,
   ],
-  controllers: [GoogleOauthController],
+  controllers: [],
   exports: [AuthService, PassportModule, JwtStrategy, JwtModule],
 })
 export class AuthModule {}

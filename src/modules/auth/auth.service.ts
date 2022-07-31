@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Observable, from, of, map } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { JwtService } from '@nestjs/jwt';
+import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import CreateUserDto, {
   CreateGoogleUserDto,
 } from '@modules/users/dto/create-user.dto';
@@ -20,7 +21,8 @@ export default class AuthService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private jwtTokenService: JwtService,
-  ) {}
+  ) {
+  }
 
   public createGoogleUser(
     createGoogleCustomerDto: CreateGoogleUserDto,
@@ -28,18 +30,15 @@ export default class AuthService {
     return this.doesUserExist(createGoogleCustomerDto.email).pipe(
       switchMap(async (doesUserExist: boolean) => {
         if (doesUserExist) {
-          throw new HttpException(
-            'A user has already been created with this email address',
-            HttpStatus.FORBIDDEN,
-          );
+          return this.userModel.findOne({ email: createGoogleCustomerDto.email });
         }
-        const { _id, avatar, email, fullName, role } = createGoogleCustomerDto;
+        const { id, avatar, email, fullName, role } = createGoogleCustomerDto;
         return await new this.userModel({
-          _id,
-          avatar,
           email,
           fullName,
           role,
+          password: randomStringGenerator(),
+          google: { id, avatar, email, fullName },
         }).save();
       }),
     );
