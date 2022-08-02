@@ -11,14 +11,14 @@ async function bootstrap() {
   app.setGlobalPrefix(process.env.APP_GLOBAL_PREFIX);
 
   app.use(
-      session({
-        secret: 'keyboard',
-        resave: false,
-        saveUninitialized: false,
-      })
-  )
-  app.use(passport.initialize())
-  app.use(passport.session())
+    session({
+      secret: 'keyboard',
+      resave: false,
+      saveUninitialized: false,
+    }),
+  );
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   await app.listen(process.env.PORT);
 }

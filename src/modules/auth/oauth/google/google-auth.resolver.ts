@@ -11,8 +11,7 @@ export default class GoogleAuthResolver {
   constructor(
     @Inject(AuthService)
     private readonly authService: AuthService,
-  ) {
-  }
+  ) {}
 
   @Mutation(() => AuthUserResponse, { name: 'googleCreatedUser' })
   registerUser(

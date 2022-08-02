@@ -21,8 +21,7 @@ export default class AuthService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private jwtTokenService: JwtService,
-  ) {
-  }
+  ) {}
 
   public createGoogleUser(
     createGoogleCustomerDto: CreateGoogleUserDto,
@@ -30,7 +29,9 @@ export default class AuthService {
     return this.doesUserExist(createGoogleCustomerDto.email).pipe(
       switchMap(async (doesUserExist: boolean) => {
         if (doesUserExist) {
-          return this.userModel.findOne({ email: createGoogleCustomerDto.email });
+          return this.userModel.findOne({
+            email: createGoogleCustomerDto.email,
+          });
         }
         const { id, avatar, email, fullName, role } = createGoogleCustomerDto;
         return await new this.userModel({
