@@ -18,9 +18,7 @@ import SessionSerializer from '@modules/auth/serializers/session.serializer';
   imports: [
     ConfigModule.forFeature(GoogleConfig),
     ConfigModule.forFeature(JwtConfig),
-    MongooseModule.forFeature([
-        { name: User.name, schema: UserSchema },
-    ]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       inject: [ConfigService],

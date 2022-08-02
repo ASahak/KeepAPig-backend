@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { USER_ROLES } from '@common/enums';
 import { GoogleIUser } from '@interfaces/user.interface';
 
-type GoogleBodyType<T> = T & { token: string, role: keyof typeof USER_ROLES };
+type GoogleBodyType<T> = T & { token: string; role: keyof typeof USER_ROLES };
 
 @Injectable()
 export default class GoogleStrategy extends PassportStrategy(
