@@ -7,7 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from '@modules/auth/auth.module';
-import { UsersModule } from '@modules/users/users.module';
+import { UserModule } from '@modules/user/user.module';
 import AllExceptionsFilter from '@filters/exeption';
 import GraphqlConfigService from '@config/graphql.config';
 
@@ -23,7 +23,7 @@ import GraphqlConfigService from '@config/graphql.config';
       useUnifiedTopology: true,
     }),
     AuthModule,
-    UsersModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [

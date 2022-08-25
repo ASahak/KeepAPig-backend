@@ -17,6 +17,7 @@
       "@graphql/*": ["src/graphql/*"],
       "@filters/*": ["src/filters/*"],
       "@config/*": ["src/config/*"],
+      "@repositories/*": ["src/repositories/*"],
     },
     "incremental": true,
     "skipLibCheck": true,
