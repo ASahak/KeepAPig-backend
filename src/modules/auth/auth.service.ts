@@ -1,62 +1,67 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
-import { Observable, from, of, map } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { JwtService } from '@nestjs/jwt';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import CreateUserDto, {
   CreateGoogleUserDto,
-} from '@modules/users/dto/create-user.dto';
-import { User, UserDocument } from '@modules/users/schema/user.schema';
+} from '@modules/user/dto/create-user.dto';
+import SignInUserDto from '@modules/user/dto/sign-in-user.dto';
+import UserService from '@modules/user/user.service';
 import IUser, {
   UserPayloadTypes,
   UserJwtPayload,
   GoogleIUser,
 } from '@interfaces//user.interface';
 import AuthUserResponse from './responses/auth-user.response';
+import { UserRepository } from '@repositories/user-repository';
 
 @Injectable()
 export default class AuthService {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private jwtTokenService: JwtService,
+    private userRepository: UserRepository,
+    private userService: UserService,
   ) {}
 
   public createGoogleUser(
     createGoogleCustomerDto: CreateGoogleUserDto,
   ): Observable<Partial<GoogleIUser>> {
-    return this.doesUserExist(createGoogleCustomerDto.email).pipe(
-      switchMap(async (doesUserExist: boolean) => {
-        if (doesUserExist) {
-          return this.userModel.findOne({
-            email: createGoogleCustomerDto.email,
+    return this.userService
+      .doesUserExist({ email: createGoogleCustomerDto.email })
+      .pipe(
+        switchMap(async (doesUserExist: boolean) => {
+          if (doesUserExist) {
+            return this.userRepository.findByCondition({
+              email: createGoogleCustomerDto.email,
+            });
+          }
+          const { id, avatar, email, fullName, role } = createGoogleCustomerDto;
+          return this.userRepository.create({
+            email,
+            fullName,
+            role,
+            password: randomStringGenerator(),
+            google: { id, avatar, email, fullName },
           });
-        }
-        const { id, avatar, email, fullName, role } = createGoogleCustomerDto;
-        return await new this.userModel({
-          email,
-          fullName,
-          role,
-          password: randomStringGenerator(),
-          google: { id, avatar, email, fullName },
-        }).save();
-      }),
-    );
+        }),
+      );
   }
 
   public create(createCustomerDto: CreateUserDto): Observable<IUser> {
-    return this.doesUserExist(createCustomerDto.email).pipe(
-      switchMap(async (doesUserExist: boolean) => {
-        if (doesUserExist) {
-          throw new HttpException(
-            'A user has already been created with this email address',
-            HttpStatus.FORBIDDEN,
-          );
-        }
-        return await new this.userModel(createCustomerDto).save();
-      }),
-    );
+    return this.userService
+      .doesUserExist({ email: createCustomerDto.email })
+      .pipe(
+        switchMap(async (doesUserExist: boolean) => {
+          if (doesUserExist) {
+            throw new HttpException(
+              'A user has already been created with this email address.',
+              HttpStatus.FORBIDDEN,
+            );
+          }
+          return this.userRepository.create(createCustomerDto);
+        }),
+      );
   }
 
   public signInToken = (
@@ -71,19 +76,15 @@ export default class AuthService {
     );
   };
 
-  private doesUserExist(email: string): Observable<boolean> {
-    return from(this.userModel.findOne({ email })).pipe(
-      map((user: User) => {
-        return !!user;
+  public login(signInUserDto: SignInUserDto): Observable<IUser> {
+    return this.userService.doesUserExist({ email: signInUserDto.email }).pipe(
+      switchMap(async (doesUserExist: boolean) => {
+        if (doesUserExist) {
+          return this.userRepository.find({ email: signInUserDto.email });
+        } else {
+          throw new HttpException("User doesn't exist!", HttpStatus.FORBIDDEN);
+        }
       }),
     );
-  }
-
-  async loginWithCredentials(user: IUser) {
-    const payload = { email: user.email, sub: user._id };
-
-    return {
-      access_token: this.jwtTokenService.sign(payload),
-    };
   }
 }

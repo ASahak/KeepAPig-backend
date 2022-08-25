@@ -2,7 +2,7 @@ import { InputType, Field } from '@nestjs/graphql';
 import { USER_ROLES } from '@common/enums';
 
 @InputType()
-export default class UserInput {
+export default class CreateUserInputType {
   @Field(() => String)
   readonly email: string;
 
@@ -17,7 +17,7 @@ export default class UserInput {
 }
 
 @InputType()
-export class GoogleUserInput {
+export class GoogleUserInputType {
   @Field(() => String)
   readonly id: string;
 

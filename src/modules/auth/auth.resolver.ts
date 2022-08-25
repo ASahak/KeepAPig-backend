@@ -1,12 +1,11 @@
-import { Inject, UseGuards, Request } from '@nestjs/common';
-import { Resolver, Mutation, Args } from '@nestjs/graphql';
+import { Inject } from '@nestjs/common';
+import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
 import { Observable, switchMap, map } from 'rxjs';
-import { AuthGuard } from '@nestjs/passport';
 import AuthService from '@modules/auth/auth.service';
 import AuthUserResponse from '@modules/auth/responses/auth-user.response';
-import CreateUserInput from '@modules/users/dto/inputs/create-user-input-type';
-import { User } from '@modules/users/schema/user.schema';
+import CreateUserInputType from '@modules/user/dto/inputs/create-user-input-type';
 import IUser from '@interfaces/user.interface';
+import SignInUserInputType from '@modules/user/dto/inputs/sign-in-user-input-type';
 
 @Resolver('Auth')
 export default class AuthResolver {
@@ -17,7 +16,7 @@ export default class AuthResolver {
 
   @Mutation(() => AuthUserResponse, { name: 'createdUser' })
   registerUser(
-    @Args('data') user: CreateUserInput,
+    @Args('data') user: CreateUserInputType,
   ): Observable<AuthUserResponse> {
     return this.authService.create(user).pipe(
       switchMap((result) => {
@@ -28,10 +27,16 @@ export default class AuthResolver {
     );
   }
 
-  @UseGuards(AuthGuard('local'))
-  @Mutation(() => User)
-  async login(@Request() req) {
-    // todo
-    return this.authService.loginWithCredentials(req.user);
+  @Query(() => AuthUserResponse, { name: 'loggedUser' })
+  signIn(
+    @Args('data') user: SignInUserInputType,
+  ): Observable<AuthUserResponse> {
+    return this.authService.login(user).pipe(
+      switchMap((result) => {
+        return this.authService
+          .signInToken(result as IUser)
+          .pipe(map((authUser: AuthUserResponse) => authUser));
+      }),
+    );
   }
 }

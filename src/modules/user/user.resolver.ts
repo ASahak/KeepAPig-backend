@@ -1,13 +1,13 @@
 import { Inject } from '@nestjs/common';
 import { Resolver, Query } from '@nestjs/graphql';
 import { User } from './schema/user.schema';
-import UsersService from '@modules/users/users.service';
+import UserService from '@modules/user/user.service';
 
 @Resolver('User')
-export default class UsersResolver {
+export default class UserResolver {
   constructor(
-    @Inject(UsersService)
-    private readonly usersService: UsersService,
+    @Inject(UserService)
+    private readonly usersService: UserService,
   ) {}
 
   @Query(() => [User], { name: 'user', nullable: false })

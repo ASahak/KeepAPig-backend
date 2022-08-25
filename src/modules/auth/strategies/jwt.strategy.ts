@@ -4,14 +4,14 @@ import { Schema as MongooseSchema } from 'mongoose';
 import { PassportStrategy } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 import IUser, { UserJwtPayload } from '@interfaces/user.interface';
-import UsersService from '@modules/users/users.service';
+import UserService from '@modules/user/user.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     @Inject(ConfigService) config: ConfigService,
-    @Inject(UsersService)
-    private userService: UsersService,
+    @Inject(UserService)
+    private userService: UserService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
