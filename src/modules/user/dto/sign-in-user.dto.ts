@@ -1,8 +1,4 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
 import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()

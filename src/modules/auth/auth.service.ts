@@ -27,37 +27,41 @@ export default class AuthService {
   public createGoogleUser(
     createGoogleCustomerDto: CreateGoogleUserDto,
   ): Observable<Partial<GoogleIUser>> {
-    return this.userService.doesUserExist({ email: createGoogleCustomerDto.email }).pipe(
-      switchMap(async (doesUserExist: boolean) => {
-        if (doesUserExist) {
-          return this.userRepository.findByCondition({
-            email: createGoogleCustomerDto.email,
+    return this.userService
+      .doesUserExist({ email: createGoogleCustomerDto.email })
+      .pipe(
+        switchMap(async (doesUserExist: boolean) => {
+          if (doesUserExist) {
+            return this.userRepository.findByCondition({
+              email: createGoogleCustomerDto.email,
+            });
+          }
+          const { id, avatar, email, fullName, role } = createGoogleCustomerDto;
+          return this.userRepository.create({
+            email,
+            fullName,
+            role,
+            password: randomStringGenerator(),
+            google: { id, avatar, email, fullName },
           });
-        }
-        const { id, avatar, email, fullName, role } = createGoogleCustomerDto;
-        return this.userRepository.create({
-          email,
-          fullName,
-          role,
-          password: randomStringGenerator(),
-          google: { id, avatar, email, fullName },
-        });
-      }),
-    );
+        }),
+      );
   }
 
   public create(createCustomerDto: CreateUserDto): Observable<IUser> {
-    return this.userService.doesUserExist({ email: createCustomerDto.email }).pipe(
-      switchMap(async (doesUserExist: boolean) => {
-        if (doesUserExist) {
-          throw new HttpException(
-            'A user has already been created with this email address.',
-            HttpStatus.FORBIDDEN,
-          );
-        }
-        return this.userRepository.create(createCustomerDto);
-      }),
-    );
+    return this.userService
+      .doesUserExist({ email: createCustomerDto.email })
+      .pipe(
+        switchMap(async (doesUserExist: boolean) => {
+          if (doesUserExist) {
+            throw new HttpException(
+              'A user has already been created with this email address.',
+              HttpStatus.FORBIDDEN,
+            );
+          }
+          return this.userRepository.create(createCustomerDto);
+        }),
+      );
   }
 
   public signInToken = (
@@ -78,10 +82,7 @@ export default class AuthService {
         if (doesUserExist) {
           return this.userRepository.find({ email: signInUserDto.email });
         } else {
-          throw new HttpException(
-            'User doesn\'t exist!',
-            HttpStatus.FORBIDDEN,
-          );
+          throw new HttpException("User doesn't exist!", HttpStatus.FORBIDDEN);
         }
       }),
     );

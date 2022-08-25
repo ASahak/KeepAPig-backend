@@ -6,12 +6,14 @@ import { UserRepositoryInterface } from '@repositories/interfaces/user.repositor
 import { UserDocument, User } from '@modules/user/schema/user.schema';
 
 @Injectable()
-export class UserRepository extends BaseRepository<User> implements UserRepositoryInterface {
-
+export class UserRepository
+  extends BaseRepository<User>
+  implements UserRepositoryInterface
+{
   constructor(
-    @InjectModel(User.name) private readonly userRepository: Model<UserDocument>,
+    @InjectModel(User.name)
+    private readonly userRepository: Model<UserDocument>,
   ) {
     super(userRepository);
   }
-
 }

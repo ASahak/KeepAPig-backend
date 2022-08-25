@@ -1,5 +1,4 @@
 import { BaseRepository } from '@repositories/base/base.abstract.repository';
 import { User } from '@modules/user/schema/user.schema';
 
-export interface UserRepositoryInterface extends BaseRepository<User> {
-}
+export type UserRepositoryInterface = BaseRepository<User>;

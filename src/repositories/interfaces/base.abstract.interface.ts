@@ -11,5 +11,5 @@ export abstract class IBaseRepository<T> {
 
   abstract findByCondition(filterCondition: any): Promise<any>;
 
-  abstract remove(id: string): Promise<any>
+  abstract remove(id: string): Promise<any>;
 }

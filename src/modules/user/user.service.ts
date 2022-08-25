@@ -25,15 +25,12 @@ export default class UserService {
     return this.doesUserExist({ id: userId }).pipe(
       switchMap(async (doesUserExist: boolean) => {
         if (doesUserExist) {
-          return this.userRepository.findOneById(userId)
+          return this.userRepository.findOneById(userId);
         } else {
-          throw new HttpException(
-            'There is no user.',
-            HttpStatus.FORBIDDEN,
-          );
+          throw new HttpException('There is no user.', HttpStatus.FORBIDDEN);
         }
-      })
-    )
+      }),
+    );
   }
 
   findOne(id: MongooseSchema.Types.ObjectId) {
