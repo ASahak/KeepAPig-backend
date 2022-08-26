@@ -2,9 +2,10 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { from, map, Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { Model, Schema as MongooseSchema } from 'mongoose';
+import { Model } from 'mongoose';
 import { UserDocument, User } from './schema/user.schema';
 import { UserRepository } from '@repositories/user-repository';
+import FetchUserDto from '@modules/user/dto/fetch-user.dto';
 
 @Injectable()
 export default class UserService {
@@ -21,19 +22,15 @@ export default class UserService {
     );
   }
 
-  private fetchUser(userId: string): Observable<User> {
-    return this.doesUserExist({ id: userId }).pipe(
-      switchMap(async (doesUserExist: boolean) => {
+  public fetchUser(userDto: FetchUserDto): Observable<User> {
+    return this.doesUserExist({ _id: userDto._id }).pipe(
+      switchMap((doesUserExist: boolean) => {
         if (doesUserExist) {
-          return this.userRepository.findOneById(userId);
+          return this.userRepository.findOneById(userDto._id);
         } else {
           throw new HttpException('There is no user.', HttpStatus.FORBIDDEN);
         }
       }),
     );
-  }
-
-  findOne(id: MongooseSchema.Types.ObjectId) {
-    return this.userModel.findById(id);
   }
 }

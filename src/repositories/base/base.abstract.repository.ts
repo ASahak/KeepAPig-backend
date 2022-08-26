@@ -1,4 +1,4 @@
-import { Model } from 'mongoose';
+import { Model, Schema as MongooseSchema } from 'mongoose';
 import { IBaseRepository } from '@repositories/interfaces/base.abstract.interface';
 
 export class BaseRepository<T> implements IBaseRepository<T> {
@@ -20,7 +20,7 @@ export class BaseRepository<T> implements IBaseRepository<T> {
     return this._repository.find({ $where: filterCondition });
   }
 
-  async findOneById(id: string): Promise<T> {
+  async findOneById(id: string | MongooseSchema.Types.ObjectId): Promise<T> {
     return this._repository.findById(id);
   }
 

@@ -9,7 +9,6 @@ import CreateUserDto, {
 import SignInUserDto from '@modules/user/dto/sign-in-user.dto';
 import UserService from '@modules/user/user.service';
 import IUser, {
-  UserPayloadTypes,
   UserJwtPayload,
   GoogleIUser,
 } from '@interfaces//user.interface';
@@ -30,7 +29,7 @@ export default class AuthService {
     return this.userService
       .doesUserExist({ email: createGoogleCustomerDto.email })
       .pipe(
-        switchMap(async (doesUserExist: boolean) => {
+        switchMap((doesUserExist: boolean) => {
           if (doesUserExist) {
             return this.userRepository.findByCondition({
               email: createGoogleCustomerDto.email,
@@ -52,7 +51,7 @@ export default class AuthService {
     return this.userService
       .doesUserExist({ email: createCustomerDto.email })
       .pipe(
-        switchMap(async (doesUserExist: boolean) => {
+        switchMap((doesUserExist: boolean) => {
           if (doesUserExist) {
             throw new HttpException(
               'A user has already been created with this email address.',
@@ -65,7 +64,7 @@ export default class AuthService {
   }
 
   public signInToken = (
-    user: Partial<UserPayloadTypes>,
+    user: Partial<IUser>,
   ): Observable<AuthUserResponse> => {
     const payload: UserJwtPayload = { name: user.fullName, sub: user._id };
     return of(
@@ -78,7 +77,7 @@ export default class AuthService {
 
   public login(signInUserDto: SignInUserDto): Observable<IUser> {
     return this.userService.doesUserExist({ email: signInUserDto.email }).pipe(
-      switchMap(async (doesUserExist: boolean) => {
+      switchMap((doesUserExist: boolean) => {
         if (doesUserExist) {
           return this.userRepository.find({ email: signInUserDto.email });
         } else {
