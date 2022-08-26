@@ -7,6 +7,7 @@ export default interface IUser {
   fullName: string;
   password: string;
   role: keyof typeof USER_ROLES;
+  google?: GoogleIUser;
 }
 
 export interface GoogleIUser {
@@ -15,8 +16,6 @@ export interface GoogleIUser {
   fullName: string;
   avatar: string;
 }
-
-export type UserPayloadTypes = GoogleIUser & IUser;
 
 export interface UserJwtPayload {
   name: string;
