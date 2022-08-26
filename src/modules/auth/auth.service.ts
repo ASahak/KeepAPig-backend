@@ -63,9 +63,7 @@ export default class AuthService {
       );
   }
 
-  public signInToken = (
-    user: Partial<IUser>,
-  ): Observable<AuthUserResponse> => {
+  public signInToken = (user: Partial<IUser>): Observable<AuthUserResponse> => {
     const payload: UserJwtPayload = { name: user.fullName, sub: user._id };
     return of(
       new AuthUserResponse({

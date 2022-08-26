@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { Observable, switchMap } from 'rxjs';
 import { Resolver, Query, Args } from '@nestjs/graphql';
-import { User } from './schema/user.schema';
+import IUser from '@interfaces/user.interface';
 import UserService from '@modules/user/user.service';
 import FetchUserResponse from '@modules/auth/responses/fetch-user.response';
 import FetchUserInputType from '@modules/user/dto/inputs/fetch-user-input-type';
@@ -17,8 +17,8 @@ export default class UserResolver {
   fetchUser(
     @Args('data') user: FetchUserInputType,
   ): Observable<FetchUserResponse> {
-    return this.usersService.fetchUser(user).pipe(
-      switchMap(async (result) => ({ user: result })),
-    );
+    return this.usersService
+      .fetchUser(user)
+      .pipe(switchMap(async (result: IUser) => ({ user: result })));
   }
 }
