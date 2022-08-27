@@ -31,7 +31,7 @@ export default class AuthService {
       .pipe(
         switchMap((doesUserExist: boolean) => {
           if (doesUserExist) {
-            return this.userRepository.findByCondition({
+            return this.userRepository.find({
               email: createGoogleCustomerDto.email,
             });
           }
