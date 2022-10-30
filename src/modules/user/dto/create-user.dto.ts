@@ -7,7 +7,7 @@ import {
 } from 'class-validator';
 import { ObjectType, Field } from '@nestjs/graphql';
 import { Schema as MongooseSchema } from 'mongoose';
-import { USER_ROLES } from '@common/enums';
+import { USER_ROLES } from '@/common/enums';
 
 @ObjectType()
 export default class CreateUserDto {

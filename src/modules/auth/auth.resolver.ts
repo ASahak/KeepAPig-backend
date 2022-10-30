@@ -1,11 +1,11 @@
 import { Inject } from '@nestjs/common';
 import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
 import { Observable, switchMap, map } from 'rxjs';
-import AuthService from '@modules/auth/auth.service';
-import AuthUserResponse from '@modules/auth/responses/auth-user.response';
-import CreateUserInputType from '@modules/user/dto/inputs/create-user-input-type';
-import IUser from '@interfaces/user.interface';
-import SignInUserInputType from '@modules/user/dto/inputs/sign-in-user-input-type';
+import AuthService from '@/modules/auth/auth.service';
+import AuthUserResponse from '@/modules/auth/responses/auth-user.response';
+import CreateUserInputType from '@/modules/user/dto/inputs/create-user-input-type';
+import IUser from '@/interfaces/user.interface';
+import SignInUserInputType from '@/modules/user/dto/inputs/sign-in-user-input-type';
 
 @Resolver('Auth')
 export default class AuthResolver {

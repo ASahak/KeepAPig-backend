@@ -5,15 +5,16 @@ import { JwtService } from '@nestjs/jwt';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import CreateUserDto, {
   CreateGoogleUserDto,
-} from '@modules/user/dto/create-user.dto';
-import SignInUserDto from '@modules/user/dto/sign-in-user.dto';
-import UserService from '@modules/user/user.service';
+} from '@/modules/user/dto/create-user.dto';
+import SignInUserDto from '@/modules/user/dto/sign-in-user.dto';
+import UserService from '@/modules/user/user.service';
 import IUser, {
   UserJwtPayload,
   GoogleIUser,
-} from '@interfaces//user.interface';
+} from '@/interfaces//user.interface';
 import AuthUserResponse from './responses/auth-user.response';
-import { UserRepository } from '@repositories/user-repository';
+import { UserRepository } from '@/repositories/user-repository';
+import { MESSAGES } from '@/common/enums';
 
 @Injectable()
 export default class AuthService {
@@ -54,7 +55,7 @@ export default class AuthService {
         switchMap((doesUserExist: boolean) => {
           if (doesUserExist) {
             throw new HttpException(
-              'A user has already been created with this email address.',
+              MESSAGES.USER.USER_EXIST,
               HttpStatus.FORBIDDEN,
             );
           }
@@ -79,7 +80,10 @@ export default class AuthService {
         if (doesUserExist) {
           return this.userRepository.find({ email: signInUserDto.email });
         } else {
-          throw new HttpException("User doesn't exist!", HttpStatus.FORBIDDEN);
+          throw new HttpException(
+            MESSAGES.USER.USER_DOES_NOT_EXIST,
+            HttpStatus.FORBIDDEN,
+          );
         }
       }),
     );

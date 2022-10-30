@@ -3,8 +3,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as passport from 'passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
-import { USER_ROLES } from '@common/enums';
-import { GoogleIUser } from '@interfaces/user.interface';
+import { USER_ROLES } from '@/common/enums';
+import { GoogleIUser } from '@/interfaces/user.interface';
 
 type GoogleBodyType<T> = T & { token: string; role: keyof typeof USER_ROLES };
 
