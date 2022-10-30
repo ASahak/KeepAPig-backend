@@ -24,13 +24,14 @@
   "dependencies": {
     "@nestjs/apollo": "^10.0.6",
     "@nestjs/common": "^8.0.0",
-    "@nestjs/config": "^1.1.6",
+    "@nestjs/config": "^1.2.1",
     "@nestjs/core": "^8.0.0",
     "@nestjs/graphql": "^9.1.2",
     "@nestjs/jwt": "^8.0.0",
     "@nestjs/mongoose": "^9.0.2",
     "@nestjs/passport": "^8.1.0",
     "@nestjs/platform-express": "^8.0.0",
+    "@sendgrid/mail": "^7.7.0",
     "@types/express-session": "^1.17.5",
     "apollo-server-express": "^3.6.2",
     "bcrypt": "^5.0.1",
@@ -94,13 +95,13 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
-      "^@interfaces/(.*)$": "<rootDir>/../src/interfaces/$1",
-      "^@modules/(.*)$": "<rootDir>/../src/modules/$1",
-      "^@common/(.*)$": "<rootDir>/../src/common/$1",
-      "^@filters/(.*)$": "<rootDir>/../src/filters/$1",
-      "^@graphql/(.*)$": "<rootDir>/../src/graphql/$1",
-      "^@config/(.*)$": "<rootDir>/../src/config/$1",
-      "^@repositories/(.*)$": "<rootDir>/../src/repositories/$1"
+      "^@/interfaces/(.*)$": "<rootDir>/../src/interfaces/$1",
+      "^@/modules/(.*)$": "<rootDir>/../src/modules/$1",
+      "^@/common/(.*)$": "<rootDir>/../src/common/$1",
+      "^@/filters/(.*)$": "<rootDir>/../src/filters/$1",
+      "^@/graphql/(.*)$": "<rootDir>/../src/graphql/$1",
+      "^@/config/(.*)$": "<rootDir>/../src/config/$1",
+      "^@/repositories/(.*)$": "<rootDir>/../src/repositories/$1"
     }
   }
 }

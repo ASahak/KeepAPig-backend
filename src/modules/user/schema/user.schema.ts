@@ -2,9 +2,9 @@ import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import * as bcrypt from 'bcrypt';
-import { USER_ROLES } from '@common/enums';
-import { PASSWORD_SALT_ROUNDS } from '@common/constants';
-import { GoogleIUser } from '@interfaces/user.interface';
+import { USER_ROLES } from '@/common/enums';
+import { PASSWORD_SALT_ROUNDS } from '@/common/constants';
+import { GoogleIUser } from '@/interfaces/user.interface';
 
 @ObjectType()
 class BasicUserModel extends Document {
@@ -40,6 +40,10 @@ export class User extends BasicUserModel {
   @Field(() => String)
   @Prop({ required: true })
   password: string;
+
+  @Field(() => String)
+  @Prop({ required: false, default: '' })
+  resetPasswordToken: string;
 
   @Field(() => GoogleModel)
   @Prop({ type: Object })

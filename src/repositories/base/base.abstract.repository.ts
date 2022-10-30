@@ -1,5 +1,5 @@
 import { Model, Schema as MongooseSchema } from 'mongoose';
-import { IBaseRepository } from '@repositories/interfaces/base.abstract.interface';
+import { IBaseRepository } from '@/repositories/interfaces/base.abstract.interface';
 
 export class BaseRepository<T> implements IBaseRepository<T> {
   private _repository: Model<T>;
@@ -28,7 +28,7 @@ export class BaseRepository<T> implements IBaseRepository<T> {
     return this._repository.create(item);
   }
 
-  async update(id: string, item: T) {
+  async update(id: string | MongooseSchema.Types.ObjectId, item: Partial<T>) {
     return this._repository.findByIdAndUpdate(id, item);
   }
 
