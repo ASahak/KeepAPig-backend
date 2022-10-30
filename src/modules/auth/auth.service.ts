@@ -80,7 +80,10 @@ export default class AuthService {
         if (doesUserExist) {
           return this.userRepository.find({ email: signInUserDto.email });
         } else {
-          throw new HttpException(MESSAGES.USER.USER_DOES_NOT_EXIST, HttpStatus.FORBIDDEN);
+          throw new HttpException(
+            MESSAGES.USER.USER_DOES_NOT_EXIST,
+            HttpStatus.FORBIDDEN,
+          );
         }
       }),
     );

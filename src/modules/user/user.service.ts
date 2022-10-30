@@ -7,7 +7,6 @@ import { UserDocument, User } from './schema/user.schema';
 import { UserRepository } from '@/repositories/user-repository';
 import FetchUserDto from '@/modules/user/dto/fetch-user.dto';
 import { MESSAGES } from '@/common/enums';
-import * as Mongoose from 'mongoose';
 
 @Injectable()
 export default class UserService {
@@ -36,7 +35,10 @@ export default class UserService {
     );
   }
 
-  public updateUser(userId: string | MongooseSchema.Types.ObjectId, props: Partial<{ [key in keyof User]: User[key] }>): Observable<User> {
+  public updateUser(
+    userId: string | MongooseSchema.Types.ObjectId,
+    props: Partial<{ [key in keyof User]: User[key] }>,
+  ): Observable<User> {
     return from(this.userRepository.update(userId, props));
   }
 }
