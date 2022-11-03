@@ -30,7 +30,7 @@ export class SendgridService {
         if (!!user) {
           const resetPasswordToken = this.jwtTokenService.sign({
             sub: user._id,
-          }) as string;
+          }, { expiresIn: '1h' }) as string;
           return from(
             this.userService.updateUser(user._id, { resetPasswordToken }),
           ).pipe(
