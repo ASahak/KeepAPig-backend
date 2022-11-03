@@ -28,9 +28,12 @@ export class SendgridService {
     return this.userService.doesUserExist({ email }, true).pipe(
       switchMap((user: User) => {
         if (!!user) {
-          const resetPasswordToken = this.jwtTokenService.sign({
-            sub: user._id,
-          }, { expiresIn: '1h' }) as string;
+          const resetPasswordToken = this.jwtTokenService.sign(
+            {
+              sub: user._id,
+            },
+            { expiresIn: '1h' },
+          ) as string;
           return from(
             this.userService.updateUser(user._id, { resetPasswordToken }),
           ).pipe(

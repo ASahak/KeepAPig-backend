@@ -77,28 +77,34 @@ export default class AuthService {
   };
 
   public login(signInUserDto: SignInUserDto): Observable<IUser> {
-    return this.userService.doesUserExist({ email: signInUserDto.email }, true).pipe(
-      switchMap((user: User) => {
-        if (user) {
-          return from(bcrypt.compare(signInUserDto.password, user.password)).pipe(
-            switchMap((isSame: boolean) => {
-              if(isSame) {
-                return this.userRepository.find({ email: signInUserDto.email });
-              } else {
-                throw MESSAGES.USER.USER_PASSWORD_OR_EMAIL_IS_WRONG;
-              }
-            }),
-            catchError(err => {
-              throw new HttpException(err, HttpStatus.FORBIDDEN)
-            })
-          )
-        } else {
-          throw new HttpException(
-            MESSAGES.USER.USER_DOES_NOT_EXIST,
-            HttpStatus.FORBIDDEN,
-          );
-        }
-      }),
-    );
+    return this.userService
+      .doesUserExist({ email: signInUserDto.email }, true)
+      .pipe(
+        switchMap((user: User) => {
+          if (user) {
+            return from(
+              bcrypt.compare(signInUserDto.password, user.password),
+            ).pipe(
+              switchMap((isSame: boolean) => {
+                if (isSame) {
+                  return this.userRepository.find({
+                    email: signInUserDto.email,
+                  });
+                } else {
+                  throw MESSAGES.USER.USER_PASSWORD_OR_EMAIL_IS_WRONG;
+                }
+              }),
+              catchError((err) => {
+                throw new HttpException(err, HttpStatus.FORBIDDEN);
+              }),
+            );
+          } else {
+            throw new HttpException(
+              MESSAGES.USER.USER_DOES_NOT_EXIST,
+              HttpStatus.FORBIDDEN,
+            );
+          }
+        }),
+      );
   }
 }

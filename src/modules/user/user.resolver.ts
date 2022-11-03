@@ -16,10 +16,12 @@ export default class UserResolver {
   ) {}
 
   @Mutation(() => ChangePasswordResponse, { name: 'changePassword' })
-  changePassword(@Args('data') data: ChangePasswordInputType): Observable<{ success: boolean }> {
+  changePassword(
+    @Args('data') data: ChangePasswordInputType,
+  ): Observable<{ success: boolean }> {
     return from(this.usersService.changePassword(data)).pipe(
-      switchMap((success: boolean) => of({ success }))
-    )
+      switchMap((success: boolean) => of({ success })),
+    );
   }
 
   @Query(() => FetchUserResponse, { name: 'fetchedUser', nullable: false })
