@@ -7,9 +7,8 @@ import { Model, Schema as MongooseSchema } from 'mongoose';
 import { UserDocument, User } from './schema/user.schema';
 import { UserRepository } from '@/repositories/user-repository';
 import FetchUserDto from '@/modules/user/dto/fetch-user.dto';
-import { MESSAGES } from '@/common/enums';
-import ChangePasswordInputType from '@/modules/user/dto/inputs/change-password-input-type';
-import { PASSWORD_SALT_ROUNDS } from '@/common/constants';
+import ChangePasswordDto from '@/modules/user/dto/change-password.dto';
+import { PASSWORD_SALT_ROUNDS, MESSAGES } from '@/common/constants';
 
 @Injectable()
 export default class UserService {
@@ -49,7 +48,7 @@ export default class UserService {
     password,
     _id,
     token,
-  }: ChangePasswordInputType): Observable<boolean> {
+  }: ChangePasswordDto): Observable<boolean> {
     return this.doesUserExist({ _id }, true).pipe(
       switchMap((user: User) => {
         if (user) {

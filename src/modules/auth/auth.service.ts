@@ -16,7 +16,7 @@ import IUser, {
 } from '@/interfaces//user.interface';
 import AuthUserResponse from './responses/auth-user.response';
 import { UserRepository } from '@/repositories/user-repository';
-import { MESSAGES } from '@/common/enums';
+import { MESSAGES } from '@/common/constants';
 
 @Injectable()
 export default class AuthService {

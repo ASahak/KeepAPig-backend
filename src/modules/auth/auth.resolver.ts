@@ -3,9 +3,9 @@ import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
 import { Observable, switchMap, map } from 'rxjs';
 import AuthService from '@/modules/auth/auth.service';
 import AuthUserResponse from '@/modules/auth/responses/auth-user.response';
-import CreateUserInputType from '@/modules/user/dto/inputs/create-user-input-type';
+import CreateUserDto from '@/modules/user/dto/create-user.dto';
 import IUser from '@/interfaces/user.interface';
-import SignInUserInputType from '@/modules/user/dto/inputs/sign-in-user-input-type';
+import SignInUserDto from '@/modules/user/dto/sign-in-user.dto';
 
 @Resolver('Auth')
 export default class AuthResolver {
@@ -16,7 +16,7 @@ export default class AuthResolver {
 
   @Mutation(() => AuthUserResponse, { name: 'createdUser' })
   registerUser(
-    @Args('data') user: CreateUserInputType,
+    @Args('data') user: CreateUserDto,
   ): Observable<AuthUserResponse> {
     return this.authService.create(user).pipe(
       switchMap((result) => {
@@ -29,7 +29,7 @@ export default class AuthResolver {
 
   @Query(() => AuthUserResponse, { name: 'loggedUser' })
   signIn(
-    @Args('data') user: SignInUserInputType,
+    @Args('data') user: SignInUserDto,
   ): Observable<AuthUserResponse> {
     return this.authService.login(user).pipe(
       switchMap((result) => {

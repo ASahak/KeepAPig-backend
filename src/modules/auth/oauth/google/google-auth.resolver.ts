@@ -3,7 +3,7 @@ import { Resolver, Mutation, Args } from '@nestjs/graphql';
 import { Observable, switchMap, map } from 'rxjs';
 import AuthService from '@/modules/auth/auth.service';
 import AuthUserResponse from '@/modules/auth/responses/auth-user.response';
-import { GoogleUserInputType } from '@/modules/user/dto/inputs/create-user-input-type';
+import { CreateGoogleUserDto } from '@/modules/user/dto/create-user.dto';
 import IUser from '@/interfaces/user.interface';
 
 @Resolver('GoogleAuth')
@@ -15,7 +15,7 @@ export default class GoogleAuthResolver {
 
   @Mutation(() => AuthUserResponse, { name: 'googleCreatedUser' })
   registerUser(
-    @Args('data') user: GoogleUserInputType,
+    @Args('data') user: CreateGoogleUserDto,
   ): Observable<AuthUserResponse> {
     return this.authService.createGoogleUser(user).pipe(
       switchMap((result) => {

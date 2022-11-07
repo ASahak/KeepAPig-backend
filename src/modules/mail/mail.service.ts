@@ -4,7 +4,7 @@ import * as SendGrid from '@sendgrid/mail';
 import { JwtService } from '@nestjs/jwt';
 import { Observable, from, catchError } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { MESSAGES } from '@/common/enums';
+import { MESSAGES } from '@/common/constants';
 import UserService from '@/modules/user/user.service';
 import { User } from '@/modules/user/schema/user.schema';
 
