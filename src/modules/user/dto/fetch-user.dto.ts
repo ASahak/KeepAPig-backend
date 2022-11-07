@@ -1,8 +1,8 @@
 import { IsNotEmpty } from 'class-validator';
 import { Schema as MongooseSchema } from 'mongoose';
-import { ObjectType, Field } from '@nestjs/graphql';
+import { InputType, Field } from '@nestjs/graphql';
 
-@ObjectType()
+@InputType()
 export default class FetchUserDto {
   @IsNotEmpty()
   @Field(() => String)

@@ -1,15 +1,13 @@
-import { IsEmail, IsNotEmpty, Matches, MaxLength, MinLength } from 'class-validator';
-import { InputType, Field } from '@nestjs/graphql';
+import { IsNotEmpty, MinLength, Matches, MaxLength } from 'class-validator';
+import { Schema as MongooseSchema } from 'mongoose';
+import { InputType, Field, ID } from '@nestjs/graphql';
 import { MESSAGES, VALIDATORS } from '@/common/constants';
 
 @InputType()
-export default class SignInUserDto {
-  @IsNotEmpty({ message: MESSAGES.VALIDATIONS.EMAIL_IS_REQUIRED })
-  @IsEmail()
-  @MaxLength(VALIDATORS.EMAIL.max)
-  @Matches(VALIDATORS.EMAIL.pattern, { message: MESSAGES.VALIDATIONS.EMAIL_INVALID })
-  @Field(() => String)
-  readonly email: string;
+export default class ChangePasswordDto {
+  @IsNotEmpty()
+  @Field(() => ID)
+  readonly _id: MongooseSchema.Types.ObjectId | string;
 
   @IsNotEmpty({ message: MESSAGES.VALIDATIONS.PASSWORD_IS_NOT_BE_EMPTY })
   @MinLength(VALIDATORS.PASSWORD.min, { message: MESSAGES.VALIDATIONS.PASSWORD_HAS_MIN })
@@ -21,7 +19,7 @@ export default class SignInUserDto {
   @Field(() => String)
   readonly password: string;
 
-  @IsNotEmpty()
-  @Field(() => Boolean)
-  readonly rememberMe: boolean;
+  @IsNotEmpty({ message: MESSAGES.VALIDATIONS.TOKEN_IS_NOT_BE_EMPTY })
+  @Field(() => String)
+  readonly token: string;
 }

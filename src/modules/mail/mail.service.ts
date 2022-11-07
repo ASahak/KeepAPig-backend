@@ -4,7 +4,7 @@ import * as SendGrid from '@sendgrid/mail';
 import { JwtService } from '@nestjs/jwt';
 import { Observable, from, catchError } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { MESSAGES } from '@/common/enums';
+import { MESSAGES } from '@/common/constants';
 import UserService from '@/modules/user/user.service';
 import { User } from '@/modules/user/schema/user.schema';
 
@@ -28,9 +28,12 @@ export class SendgridService {
     return this.userService.doesUserExist({ email }, true).pipe(
       switchMap((user: User) => {
         if (!!user) {
-          const resetPasswordToken = this.jwtTokenService.sign({
-            sub: user._id,
-          }) as string;
+          const resetPasswordToken = this.jwtTokenService.sign(
+            {
+              sub: user._id,
+            },
+            { expiresIn: '1h' },
+          ) as string;
           return from(
             this.userService.updateUser(user._id, { resetPasswordToken }),
           ).pipe(

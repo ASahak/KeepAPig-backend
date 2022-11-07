@@ -1,11 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Observable, of } from 'rxjs';
+import { Observable, of, from, catchError } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import CreateUserDto, {
   CreateGoogleUserDto,
 } from '@/modules/user/dto/create-user.dto';
+import { User } from '@/modules/user/schema/user.schema';
 import SignInUserDto from '@/modules/user/dto/sign-in-user.dto';
 import UserService from '@/modules/user/user.service';
 import IUser, {
@@ -14,7 +16,7 @@ import IUser, {
 } from '@/interfaces//user.interface';
 import AuthUserResponse from './responses/auth-user.response';
 import { UserRepository } from '@/repositories/user-repository';
-import { MESSAGES } from '@/common/enums';
+import { MESSAGES } from '@/common/constants';
 
 @Injectable()
 export default class AuthService {
@@ -75,17 +77,34 @@ export default class AuthService {
   };
 
   public login(signInUserDto: SignInUserDto): Observable<IUser> {
-    return this.userService.doesUserExist({ email: signInUserDto.email }).pipe(
-      switchMap((doesUserExist: boolean) => {
-        if (doesUserExist) {
-          return this.userRepository.find({ email: signInUserDto.email });
-        } else {
-          throw new HttpException(
-            MESSAGES.USER.USER_DOES_NOT_EXIST,
-            HttpStatus.FORBIDDEN,
-          );
-        }
-      }),
-    );
+    return this.userService
+      .doesUserExist({ email: signInUserDto.email }, true)
+      .pipe(
+        switchMap((user: User) => {
+          if (user) {
+            return from(
+              bcrypt.compare(signInUserDto.password, user.password),
+            ).pipe(
+              switchMap((isSame: boolean) => {
+                if (isSame) {
+                  return this.userRepository.find({
+                    email: signInUserDto.email,
+                  });
+                } else {
+                  throw MESSAGES.USER.USER_PASSWORD_OR_EMAIL_IS_WRONG;
+                }
+              }),
+              catchError((err) => {
+                throw new HttpException(err, HttpStatus.FORBIDDEN);
+              }),
+            );
+          } else {
+            throw new HttpException(
+              MESSAGES.USER.USER_DOES_NOT_EXIST,
+              HttpStatus.FORBIDDEN,
+            );
+          }
+        }),
+      );
   }
 }

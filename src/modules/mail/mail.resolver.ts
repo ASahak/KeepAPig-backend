@@ -2,7 +2,7 @@ import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { SendgridService } from './mail.service';
-import SendEmailInputType from '@/modules/mail/dto/inputs/send-email-input-type';
+import SendEmailDto from '@/modules/mail/dto/send-email.dto';
 
 @Resolver('Mail')
 export class MailResolver {
@@ -12,7 +12,7 @@ export class MailResolver {
   ) {}
 
   @Mutation(() => Boolean, { name: 'sendEmail' })
-  sendEmail(@Args('data') data: SendEmailInputType): Observable<boolean> {
+  sendEmail(@Args('data') data: SendEmailDto): Observable<boolean> {
     return this.sendgridService.send(data);
   }
 }
