@@ -22,12 +22,12 @@ export default class UserService {
       map((user: User) => {
         return withUser ? user : !!user;
       }),
-      catchError(_ => {
+      catchError((_) => {
         throw new HttpException(
           MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
           HttpStatus.FAILED_DEPENDENCY,
         );
-      })
+      }),
     );
   }
 
@@ -40,12 +40,12 @@ export default class UserService {
           throw new HttpException(MESSAGES.USER.NO_USER, HttpStatus.FORBIDDEN);
         }
       }),
-      catchError(_ => {
+      catchError((_) => {
         throw new HttpException(
           MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
           HttpStatus.FAILED_DEPENDENCY,
         );
-      })
+      }),
     );
   }
 
@@ -54,12 +54,12 @@ export default class UserService {
     props: Partial<{ [key in keyof User]: User[key] }>,
   ): Observable<User> {
     return from(this.userRepository.update(userId, props)).pipe(
-      catchError(_ => {
+      catchError((_) => {
         throw new HttpException(
           MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
           HttpStatus.FAILED_DEPENDENCY,
         );
-      })
+      }),
     );
   }
 
@@ -92,12 +92,12 @@ export default class UserService {
           throw new HttpException(MESSAGES.USER.NO_USER, HttpStatus.FORBIDDEN);
         }
       }),
-      catchError(_ => {
+      catchError((_) => {
         throw new HttpException(
           MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
           HttpStatus.FAILED_DEPENDENCY,
         );
-      })
+      }),
     );
   }
 }
