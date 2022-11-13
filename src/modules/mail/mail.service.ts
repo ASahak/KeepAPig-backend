@@ -32,7 +32,7 @@ export class SendgridService {
             {
               sub: user._id,
             },
-            { expiresIn: '1h' },
+            { expiresIn: this.configService.get('jwt.expiresInNotRemembered') },
           ) as string;
           return from(
             this.userService.updateUser(user._id, { resetPasswordToken }),
@@ -65,6 +65,12 @@ export class SendgridService {
           );
         }
       }),
+      catchError(_ => {
+        throw new HttpException(
+          MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
+          HttpStatus.FAILED_DEPENDENCY,
+        );
+      })
     );
   }
 }

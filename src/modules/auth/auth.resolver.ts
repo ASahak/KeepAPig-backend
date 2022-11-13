@@ -21,20 +21,18 @@ export default class AuthResolver {
     return this.authService.create(user).pipe(
       switchMap((result) => {
         return this.authService
-          .signInToken(result as IUser)
+          .signInToken({ ...result as IUser, rememberMe: true })
           .pipe(map((authUser: AuthUserResponse) => authUser));
       }),
     );
   }
 
   @Query(() => AuthUserResponse, { name: 'loggedUser' })
-  signIn(
-    @Args('data') user: SignInUserDto,
-  ): Observable<AuthUserResponse> {
+  signIn(@Args('data') user: SignInUserDto): Observable<AuthUserResponse> {
     return this.authService.login(user).pipe(
       switchMap((result) => {
         return this.authService
-          .signInToken(result as IUser)
+          .signInToken({ ...result as IUser, rememberMe: user.rememberMe })
           .pipe(map((authUser: AuthUserResponse) => authUser));
       }),
     );

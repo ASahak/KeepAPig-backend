@@ -25,9 +25,7 @@ export default class UserResolver {
   }
 
   @Query(() => FetchUserResponse, { name: 'fetchedUser', nullable: false })
-  fetchUser(
-    @Args('data') user: FetchUserDto,
-  ): Observable<FetchUserResponse> {
+  fetchUser(@Args('data') user: FetchUserDto): Observable<FetchUserResponse> {
     return this.usersService
       .fetchUser(user)
       .pipe(switchMap(async (result: IUser) => ({ user: result })));

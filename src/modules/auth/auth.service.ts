@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Observable, of, from, catchError } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
@@ -24,6 +25,7 @@ export default class AuthService {
     private jwtTokenService: JwtService,
     private userRepository: UserRepository,
     private userService: UserService,
+    private readonly configService: ConfigService,
   ) {}
 
   public createGoogleUser(
@@ -47,6 +49,12 @@ export default class AuthService {
             google: { id, avatar, email, fullName },
           });
         }),
+        catchError(_ => {
+          throw new HttpException(
+            MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
+            HttpStatus.FAILED_DEPENDENCY,
+          );
+        })
       );
   }
 
@@ -63,15 +71,23 @@ export default class AuthService {
           }
           return this.userRepository.create(createCustomerDto);
         }),
+        catchError(_ => {
+          throw new HttpException(
+            MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
+            HttpStatus.FAILED_DEPENDENCY,
+          );
+        })
       );
   }
 
-  public signInToken = (user: Partial<IUser>): Observable<AuthUserResponse> => {
+  public signInToken = (user: Partial<IUser & { rememberMe: boolean }>): Observable<AuthUserResponse> => {
     const payload: UserJwtPayload = { name: user.fullName, sub: user._id };
     return of(
       new AuthUserResponse({
         user,
-        token: this.jwtTokenService.sign(payload),
+        token: this.jwtTokenService.sign(payload, {
+          expiresIn: user.rememberMe ? this.configService.get('jwt.expiresIn') : this.configService.get('jwt.expiresInNotRemembered')
+        }),
       }),
     );
   };
@@ -105,6 +121,12 @@ export default class AuthService {
             );
           }
         }),
+        catchError(_ => {
+          throw new HttpException(
+            MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
+            HttpStatus.FAILED_DEPENDENCY,
+          );
+        })
       );
   }
 }

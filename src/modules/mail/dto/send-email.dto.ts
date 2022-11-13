@@ -7,7 +7,9 @@ export default class SendEmailDto {
   @IsNotEmpty({ message: MESSAGES.VALIDATIONS.EMAIL_IS_REQUIRED })
   @IsEmail()
   @MaxLength(VALIDATORS.EMAIL.max)
-  @Matches(VALIDATORS.EMAIL.pattern, { message: MESSAGES.VALIDATIONS.EMAIL_INVALID })
+  @Matches(VALIDATORS.EMAIL.pattern, {
+    message: MESSAGES.VALIDATIONS.EMAIL_INVALID,
+  })
   @Field(() => String)
   readonly email: string;
 
