@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { from, map, of, Observable } from 'rxjs';
+import { from, map, of, Observable, catchError } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import * as bcrypt from 'bcrypt';
 import { Model, Schema as MongooseSchema } from 'mongoose';
@@ -22,6 +22,12 @@ export default class UserService {
       map((user: User) => {
         return withUser ? user : !!user;
       }),
+      catchError(_ => {
+        throw new HttpException(
+          MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
+          HttpStatus.FAILED_DEPENDENCY,
+        );
+      })
     );
   }
 
@@ -34,6 +40,12 @@ export default class UserService {
           throw new HttpException(MESSAGES.USER.NO_USER, HttpStatus.FORBIDDEN);
         }
       }),
+      catchError(_ => {
+        throw new HttpException(
+          MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
+          HttpStatus.FAILED_DEPENDENCY,
+        );
+      })
     );
   }
 
@@ -41,7 +53,14 @@ export default class UserService {
     userId: string | MongooseSchema.Types.ObjectId,
     props: Partial<{ [key in keyof User]: User[key] }>,
   ): Observable<User> {
-    return from(this.userRepository.update(userId, props));
+    return from(this.userRepository.update(userId, props)).pipe(
+      catchError(_ => {
+        throw new HttpException(
+          MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
+          HttpStatus.FAILED_DEPENDENCY,
+        );
+      })
+    );
   }
 
   public changePassword({
@@ -73,6 +92,12 @@ export default class UserService {
           throw new HttpException(MESSAGES.USER.NO_USER, HttpStatus.FORBIDDEN);
         }
       }),
+      catchError(_ => {
+        throw new HttpException(
+          MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
+          HttpStatus.FAILED_DEPENDENCY,
+        );
+      })
     );
   }
 }
