@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Observable, of, from, catchError } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, map } from 'rxjs/operators';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -107,9 +107,9 @@ export default class AuthService {
             ).pipe(
               switchMap((isSame: boolean) => {
                 if (isSame) {
-                  return this.userRepository.find({
+                  return from(this.userRepository.find({
                     email: signInUserDto.email,
-                  });
+                  })).pipe(map(user => user));
                 } else {
                   throw MESSAGES.USER.USER_PASSWORD_OR_EMAIL_IS_WRONG;
                 }

@@ -78,7 +78,12 @@ export default class UserService {
                   this.updateUser(_id, { password, resetPasswordToken: null }),
                 ).pipe(
                   switchMap((_) => of(true)),
-                  // catchError(err => new HttpException(err, HttpStatus.FORBIDDEN))
+                  catchError((_) => {
+                    throw new HttpException(
+                      MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
+                      HttpStatus.FAILED_DEPENDENCY,
+                    );
+                  }),
                 );
               }),
             );
