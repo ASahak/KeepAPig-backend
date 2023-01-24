@@ -15,6 +15,10 @@ class BasicUserModel extends Document {
   @Field(() => String)
   @Prop({ required: true, unique: true })
   email: string;
+
+  @Field(() => String)
+  @Prop({ required: false })
+  avatar?: string;
 }
 
 @ObjectType()
@@ -22,10 +26,6 @@ class GoogleModel extends BasicUserModel {
   @Field(() => String)
   @Prop({ required: true })
   id: string;
-
-  @Field(() => String)
-  @Prop({ required: true })
-  avatar: string;
 }
 
 @ObjectType()

@@ -107,9 +107,11 @@ export default class AuthService {
             ).pipe(
               switchMap((isSame: boolean) => {
                 if (isSame) {
-                  return from(this.userRepository.find({
-                    email: signInUserDto.email,
-                  })).pipe(map(user => user));
+                  return from(
+                    this.userRepository.find({
+                      email: signInUserDto.email,
+                    }),
+                  ).pipe(map((user) => user));
                 } else {
                   throw MESSAGES.USER.USER_PASSWORD_OR_EMAIL_IS_WRONG;
                 }
