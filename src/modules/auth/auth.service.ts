@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Observable, of, from, catchError } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, map } from 'rxjs/operators';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -49,12 +49,12 @@ export default class AuthService {
             google: { id, avatar, email, fullName },
           });
         }),
-        catchError(_ => {
+        catchError((_) => {
           throw new HttpException(
             MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
             HttpStatus.FAILED_DEPENDENCY,
           );
-        })
+        }),
       );
   }
 
@@ -71,22 +71,26 @@ export default class AuthService {
           }
           return this.userRepository.create(createCustomerDto);
         }),
-        catchError(_ => {
+        catchError((_) => {
           throw new HttpException(
             MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
             HttpStatus.FAILED_DEPENDENCY,
           );
-        })
+        }),
       );
   }
 
-  public signInToken = (user: Partial<IUser & { rememberMe: boolean }>): Observable<AuthUserResponse> => {
+  public signInToken = (
+    user: Partial<IUser & { rememberMe: boolean }>,
+  ): Observable<AuthUserResponse> => {
     const payload: UserJwtPayload = { name: user.fullName, sub: user._id };
     return of(
       new AuthUserResponse({
         user,
         token: this.jwtTokenService.sign(payload, {
-          expiresIn: user.rememberMe ? this.configService.get('jwt.expiresIn') : this.configService.get('jwt.expiresInNotRemembered')
+          expiresIn: user.rememberMe
+            ? this.configService.get('jwt.expiresIn')
+            : this.configService.get('jwt.expiresInNotRemembered'),
         }),
       }),
     );
@@ -103,9 +107,11 @@ export default class AuthService {
             ).pipe(
               switchMap((isSame: boolean) => {
                 if (isSame) {
-                  return this.userRepository.find({
-                    email: signInUserDto.email,
-                  });
+                  return from(
+                    this.userRepository.find({
+                      email: signInUserDto.email,
+                    }),
+                  ).pipe(map((user) => user));
                 } else {
                   throw MESSAGES.USER.USER_PASSWORD_OR_EMAIL_IS_WRONG;
                 }
@@ -121,12 +127,12 @@ export default class AuthService {
             );
           }
         }),
-        catchError(_ => {
+        catchError((_) => {
           throw new HttpException(
             MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
             HttpStatus.FAILED_DEPENDENCY,
           );
-        })
+        }),
       );
   }
 }

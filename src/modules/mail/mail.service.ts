@@ -65,12 +65,12 @@ export class SendgridService {
           );
         }
       }),
-      catchError(_ => {
+      catchError((_) => {
         throw new HttpException(
           MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
           HttpStatus.FAILED_DEPENDENCY,
         );
-      })
+      }),
     );
   }
 }

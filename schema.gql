@@ -1,0 +1,90 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type GoogleModel {
+  fullName: String!
+  email: String!
+  avatar: String!
+  id: String!
+}
+
+type User {
+  fullName: String!
+  email: String!
+  avatar: String!
+  _id: ID!
+  password: String!
+  resetPasswordToken: String!
+  google: GoogleModel!
+  role: String!
+}
+
+type AuthUserResponse {
+  user: User!
+  token: String!
+}
+
+type FetchUserResponse {
+  user: User!
+}
+
+type ChangePasswordResponse {
+  success: Boolean!
+}
+
+type UploadAvatarResponse {
+  success: Boolean!
+}
+
+type Query {
+  loggedUser(data: SignInUserDto!): AuthUserResponse!
+  fetchedUser(data: FetchUserDto!): FetchUserResponse!
+}
+
+input SignInUserDto {
+  email: String!
+  password: String!
+  rememberMe: Boolean!
+}
+
+input FetchUserDto {
+  _id: String!
+}
+
+type Mutation {
+  createdUser(data: CreateUserDto!): AuthUserResponse!
+  googleCreatedUser(data: CreateGoogleUserDto!): AuthUserResponse!
+  changePassword(data: ChangePasswordDto!): ChangePasswordResponse!
+  uploadedAvatar(file: Upload!): UploadAvatarResponse!
+  sendEmail(data: SendEmailDto!): Boolean!
+}
+
+input CreateUserDto {
+  email: String!
+  fullName: String!
+  password: String!
+  role: String!
+}
+
+input CreateGoogleUserDto {
+  id: String!
+  email: String!
+  fullName: String!
+  avatar: String!
+  role: String!
+}
+
+input ChangePasswordDto {
+  _id: ID!
+  password: String!
+  token: String!
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+input SendEmailDto {
+  email: String!
+  clientOrigin: String!
+}

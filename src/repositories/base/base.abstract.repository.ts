@@ -13,7 +13,7 @@ export class BaseRepository<T> implements IBaseRepository<T> {
   }
 
   async find(params: Partial<{ [key in keyof T]: T[key] }>): Promise<T> {
-    return this._repository.findOne(params);
+    return this._repository.findOne(params).lean();
   }
 
   async findByCondition(filterCondition: any): Promise<any> {

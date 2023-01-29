@@ -11,6 +11,7 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
+      "@/storage/*": ["src/storage/*"],
       "@/interfaces/*": ["src/interfaces/*"],
       "@/modules/*": ["src/modules/*"],
       "@/common/*": ["src/common/*"],

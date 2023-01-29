@@ -21,7 +21,7 @@ export default class AuthResolver {
     return this.authService.create(user).pipe(
       switchMap((result) => {
         return this.authService
-          .signInToken({ ...result as IUser, rememberMe: true })
+          .signInToken({ ...(result as IUser), rememberMe: true })
           .pipe(map((authUser: AuthUserResponse) => authUser));
       }),
     );
@@ -32,7 +32,7 @@ export default class AuthResolver {
     return this.authService.login(user).pipe(
       switchMap((result) => {
         return this.authService
-          .signInToken({ ...result as IUser, rememberMe: user.rememberMe })
+          .signInToken({ ...result, rememberMe: user.rememberMe })
           .pipe(map((authUser: AuthUserResponse) => authUser));
       }),
     );
