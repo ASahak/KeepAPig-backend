@@ -11,9 +11,11 @@ import { UserModule } from '@/modules/user/user.module';
 import { MailModule } from '@/modules/mail/mail.module';
 import AllExceptionsFilter from '@/filters/exeption';
 import GraphqlConfigService from '@/config/graphql.config';
+import CoreModule from '@/modules/core';
 
 @Module({
   imports: [
+    CoreModule,
     GraphQLModule.forRootAsync({
       driver: ApolloDriver,
       useClass: GraphqlConfigService,

@@ -1,9 +1,8 @@
-import { Inject, UseInterceptors  } from '@nestjs/common';
+import { Inject, UseInterceptors } from '@nestjs/common';
 import { Observable, switchMap, from, of } from 'rxjs';
-import { Resolver, Query, Args, Mutation, Int } from '@nestjs/graphql';
+import { JwtService } from '@nestjs/jwt';
+import { Resolver, Query, Args, Mutation, Int, Context } from '@nestjs/graphql';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { GraphQLUpload, FileUpload } from 'graphql-upload-minimal';
-// import { diskStorage } from 'multer';
 import IUser from '@/interfaces/user.interface';
 import UserService from '@/modules/user/user.service';
 import FetchUserResponse from '@/modules/user/responses/fetch-user.response';
@@ -18,6 +17,7 @@ export default class UserResolver {
   constructor(
     @Inject(UserService)
     private readonly usersService: UserService,
+    private jwtTokenService: JwtService,
   ) {}
 
   @Mutation(() => ChangePasswordResponse, { name: 'changePassword' })
@@ -36,18 +36,20 @@ export default class UserResolver {
       .pipe(switchMap(async (result: IUser) => ({ user: result })));
   }
 
-
   @Mutation(() => UploadAvatarResponse, { name: 'uploadedAvatar' })
   async uploadAvatar(
-    @Args('data') file: UploadAvatarDto
-  ): Promise<number> {
-    try {
-      console.log(file);
-      return 1
+    @Args('data') data: UploadAvatarDto,
+    @Context() context: any
+  ) {
+    const { req } = context;
+    const token = req.headers.authorization.split(' ')[1];
+    const { sub } = this.jwtTokenService.decode(token);
+    return this.usersService
+      .uploadPicture(data.file, sub);
+    // try {
       // const { createReadStream } = file;
       //
       // const stream = createReadStream();
-
 
       // const storage = diskStorage({
       //   destination: '@/storage/uploads',
@@ -59,7 +61,6 @@ export default class UserResolver {
       //
       // storage(stream)
       // return
-
 
       // const chunks = [];
       //
@@ -78,7 +79,6 @@ export default class UserResolver {
       //   stream.on('error', reject);
       // });1
 
-
       // const base64 = buffer.toString('base64');
       // If you want to store the file, this is one way of doing
       // it, as you have the file in-memory as Buffer
@@ -87,9 +87,9 @@ export default class UserResolver {
       // this.person.coverPhoto = base64;
       //
       // return base64.length;
-    } catch (err) {
-      return 0;
-    }
+    // } catch (err) {
+    //   return 0;
+    // }
   }
 
   // @Mutation(() => Boolean)

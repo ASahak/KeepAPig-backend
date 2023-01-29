@@ -3,6 +3,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { from, map, of, Observable, catchError } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import * as bcrypt from 'bcrypt';
+import { diskStorage } from 'multer';
+import { createWriteStream } from 'fs';
+import { join } from 'path';
+import { FileUpload } from 'graphql-upload-minimal';
 import { Model, Schema as MongooseSchema } from 'mongoose';
 import { UserDocument, User } from './schema/user.schema';
 import { UserRepository } from '@/repositories/user-repository';
@@ -104,5 +108,47 @@ export default class UserService {
         );
       }),
     );
+  }
+
+  public uploadPicture (file: any, _id: string): Observable<any> {
+    return this.doesUserExist({ _id }).pipe(
+      switchMap(async (doesUserExist: boolean) => {
+        if (doesUserExist) {
+          const { createReadStream, filename } = await file;
+          console.log(createReadStream, filename);
+          // const stream = createReadStream();
+          // new Promise((res, rej) => {
+          //   createReadStream().pipe(createWriteStream(join(process.cwd(), `./src/uploads/${filename}`)))
+          //     .on('finish', () => {
+          //       console.log(1);
+          //       res(true)
+          //     })
+          //     .on('error', () => {
+          //       console.log(2);
+          //       rej()
+          //     })
+          // })
+          // const storage = diskStorage({
+          //   destination: './uploads',
+          //   filename: (req, file, cb) => {
+          //     const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('')
+          //     return cb(null, `${randomName}${file.originalname}`)
+          //   },
+          // });
+          //
+          // storage(stream)
+          return of(true);
+        } else {
+          throw new HttpException(MESSAGES.USER.NO_USER, HttpStatus.FORBIDDEN);
+        }
+      }),
+      catchError((_) => {
+        console.log(_);
+        throw new HttpException(
+          MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
+          HttpStatus.FAILED_DEPENDENCY,
+        );
+      }),
+    )
   }
 }

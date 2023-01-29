@@ -11,7 +11,9 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors();
   app.setGlobalPrefix(process.env.APP_GLOBAL_PREFIX);
-  app.use(graphqlUploadExpress({ maxFileSize: MAX_FILE_SIZE, maxFiles: MAX_FILES }));
+  app.use(
+    graphqlUploadExpress({ maxFileSize: MAX_FILE_SIZE, maxFiles: MAX_FILES }),
+  );
 
   app.use(
     session({
