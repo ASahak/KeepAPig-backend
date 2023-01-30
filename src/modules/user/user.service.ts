@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { from, map, of, Observable, catchError } from 'rxjs';
+import { from, map, of, Observable, catchError, defer } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import * as bcrypt from 'bcrypt';
-import { diskStorage } from 'multer';
+import multer from 'multer';
 import { createWriteStream } from 'fs';
 import { join } from 'path';
 import { FileUpload } from 'graphql-upload-minimal';
@@ -110,31 +110,31 @@ export default class UserService {
     );
   }
 
-  public uploadPicture (file: any, _id: string): Observable<any> {
+  public uploadPicture(file: any, _id: string): Observable<any> {
     return this.doesUserExist({ _id }).pipe(
-      switchMap(async (doesUserExist: boolean) => {
+      switchMap((doesUserExist: boolean) => {
         if (doesUserExist) {
-          const { createReadStream, filename } = await file;
-          console.log(createReadStream, filename);
-          // const stream = createReadStream();
+          defer(async () => {
+            return await file;
+          }).subscribe(({ createReadStream, filename }) => {
+            createReadStream().pipe(createWriteStream(join(process.cwd(), `./src/uploads/${filename}`)))
+              .on('finish', () => {
+                console.log(1);
+              })
+              .on('error', () => {
+                console.log(2);
+              })
+          })
           // new Promise((res, rej) => {
-          //   createReadStream().pipe(createWriteStream(join(process.cwd(), `./src/uploads/${filename}`)))
-          //     .on('finish', () => {
-          //       console.log(1);
-          //       res(true)
-          //     })
-          //     .on('error', () => {
-          //       console.log(2);
-          //       rej()
-          //     })
+
           // })
-          // const storage = diskStorage({
-          //   destination: './uploads',
-          //   filename: (req, file, cb) => {
-          //     const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('')
-          //     return cb(null, `${randomName}${file.originalname}`)
-          //   },
-          // });
+          const storage = multer.diskStorage({
+            destination: './uploads',
+            filename: (req, file, cb) => {
+              const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('')
+              return cb(null, `${randomName}${file.originalname}`)
+            },
+          });
           //
           // storage(stream)
           return of(true);
@@ -149,6 +149,6 @@ export default class UserService {
           HttpStatus.FAILED_DEPENDENCY,
         );
       }),
-    )
+    );
   }
 }
