@@ -1,9 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { from, map, of, Observable, catchError, defer } from 'rxjs';
+import { from, map, of, Observable, catchError, defer, throwError } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import * as bcrypt from 'bcrypt';
-import multer from 'multer';
 import { createWriteStream } from 'fs';
 import { join } from 'path';
 import { FileUpload } from 'graphql-upload-minimal';
@@ -12,7 +11,9 @@ import { UserDocument, User } from './schema/user.schema';
 import { UserRepository } from '@/repositories/user-repository';
 import FetchUserDto from '@/modules/user/dto/fetch-user.dto';
 import ChangePasswordDto from '@/modules/user/dto/change-password.dto';
-import { PASSWORD_SALT_ROUNDS, MESSAGES } from '@/common/constants';
+import { VALIDATORS, PASSWORD_SALT_ROUNDS, MESSAGES } from '@/common/constants';
+import { ErrorInterfaceHttpException } from '@/interfaces/global.interface';
+import { generateFileName } from '@/common/utils/handlers';
 
 @Injectable()
 export default class UserService {
@@ -58,7 +59,7 @@ export default class UserService {
     props: Partial<{ [key in keyof User]: User[key] }>,
   ): Observable<User> {
     return from(this.userRepository.update(userId, props)).pipe(
-      catchError((_) => {
+      catchError(() => {
         throw new HttpException(
           MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
           HttpStatus.FAILED_DEPENDENCY,
@@ -110,44 +111,45 @@ export default class UserService {
     );
   }
 
-  public uploadPicture(file: any, _id: string): Observable<any> {
+  public uploadPicture(file: any, _id: string): Observable<boolean> {
     return this.doesUserExist({ _id }).pipe(
       switchMap((doesUserExist: boolean) => {
         if (doesUserExist) {
-          defer(async () => {
+          return defer(async () => {
             return await file;
-          }).subscribe(({ createReadStream, filename }) => {
-            createReadStream().pipe(createWriteStream(join(process.cwd(), `./src/uploads/${filename}`)))
-              .on('finish', () => {
-                console.log(1);
-              })
-              .on('error', () => {
-                console.log(2);
-              })
-          })
-          // new Promise((res, rej) => {
-
-          // })
-          const storage = multer.diskStorage({
-            destination: './uploads',
-            filename: (req, file, cb) => {
-              const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('')
-              return cb(null, `${randomName}${file.originalname}`)
-            },
-          });
-          //
-          // storage(stream)
-          return of(true);
+          }).pipe(
+            switchMap(({ createReadStream, filename }: FileUpload) => {
+              return new Observable(observer => {
+                if(!filename.match(VALIDATORS.IMAGE.formatPattern)) {
+                  observer.error(MESSAGES.FILE.IMG_FORMAT_NOT_ALLOWED);
+                } else {
+                  createReadStream()
+                    .pipe(
+                      createWriteStream(
+                        join(process.cwd(), `./src/uploads/${generateFileName(filename)}`),
+                      ),
+                    )
+                    .on('finish', () => {
+                      observer.complete();
+                    })
+                    .on('error', () => {
+                      observer.error(MESSAGES.FILE.IMG_UPLOAD_FAILED);
+                    })
+                }
+              }).pipe(
+                switchMap((isUploaded: boolean) => of(isUploaded)),
+                catchError((errMsg) => {
+                  return throwError(() => ({ error: errMsg, statusCode: HttpStatus.FORBIDDEN }))
+                })
+              )
+            })
+          );
         } else {
-          throw new HttpException(MESSAGES.USER.NO_USER, HttpStatus.FORBIDDEN);
+          return throwError(() => ({ error: MESSAGES.USER.NO_USER, statusCode: HttpStatus.FORBIDDEN }));
         }
       }),
-      catchError((_) => {
-        console.log(_);
-        throw new HttpException(
-          MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
-          HttpStatus.FAILED_DEPENDENCY,
-        );
+      catchError(({ error, statusCode }: ErrorInterfaceHttpException) => {
+        throw new HttpException(error || MESSAGES.HTTP_EXCEPTION.SMTH_WRONG, statusCode || HttpStatus.FAILED_DEPENDENCY);
       }),
     );
   }

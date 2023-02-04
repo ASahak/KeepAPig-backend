@@ -1,4 +1,7 @@
 export default {
+  IMAGE: {
+    formatPattern: /\.(jpg|jpeg|png|gif|webp)$/,
+  },
   NAME: {
     min: 3,
     max: 30,

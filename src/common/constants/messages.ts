@@ -13,6 +13,11 @@ export const USER = {
   WRONG_TOKEN: "Token doesn't match",
 };
 
+export const FILE = {
+  IMG_UPLOAD_FAILED: 'Could not upload image.',
+  IMG_FORMAT_NOT_ALLOWED: 'Image format not allowed.',
+}
+
 export const HTTP_EXCEPTION = {
   SMTH_WRONG: 'Something went wrong.',
   SENDGRID_FAILURE: 'There was an failure regarding sendgrid API',
