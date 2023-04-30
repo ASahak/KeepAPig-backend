@@ -1,18 +1,19 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { from, map, of, Observable, catchError } from 'rxjs';
+import { from, map, of, Observable, catchError, defer, throwError } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import * as bcrypt from 'bcrypt';
-import { diskStorage } from 'multer';
 import { createWriteStream } from 'fs';
 import { join } from 'path';
-import { FileUpload } from 'graphql-upload-minimal';
 import { Model, Schema as MongooseSchema } from 'mongoose';
 import { UserDocument, User } from './schema/user.schema';
 import { UserRepository } from '@/repositories/user-repository';
 import FetchUserDto from '@/modules/user/dto/fetch-user.dto';
 import ChangePasswordDto from '@/modules/user/dto/change-password.dto';
-import { PASSWORD_SALT_ROUNDS, MESSAGES } from '@/common/constants';
+import { VALIDATORS, PASSWORD_SALT_ROUNDS, MESSAGES } from '@/common/constants';
+import { ErrorInterfaceHttpException } from '@/interfaces/global.interface';
+import { generateFileName } from '@/common/utils/handlers';
+import { FileUpload } from '@/interfaces/global.interface';
 
 @Injectable()
 export default class UserService {
@@ -58,7 +59,7 @@ export default class UserService {
     props: Partial<{ [key in keyof User]: User[key] }>,
   ): Observable<User> {
     return from(this.userRepository.update(userId, props)).pipe(
-      catchError((_) => {
+      catchError(() => {
         throw new HttpException(
           MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
           HttpStatus.FAILED_DEPENDENCY,
@@ -110,45 +111,45 @@ export default class UserService {
     );
   }
 
-  public uploadPicture (file: any, _id: string): Observable<any> {
+  public uploadPicture(file: any, _id: string): Observable<boolean> {
     return this.doesUserExist({ _id }).pipe(
-      switchMap(async (doesUserExist: boolean) => {
+      switchMap((doesUserExist: boolean) => {
         if (doesUserExist) {
-          const { createReadStream, filename } = await file;
-          console.log(createReadStream, filename);
-          // const stream = createReadStream();
-          // new Promise((res, rej) => {
-          //   createReadStream().pipe(createWriteStream(join(process.cwd(), `./src/uploads/${filename}`)))
-          //     .on('finish', () => {
-          //       console.log(1);
-          //       res(true)
-          //     })
-          //     .on('error', () => {
-          //       console.log(2);
-          //       rej()
-          //     })
-          // })
-          // const storage = diskStorage({
-          //   destination: './uploads',
-          //   filename: (req, file, cb) => {
-          //     const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('')
-          //     return cb(null, `${randomName}${file.originalname}`)
-          //   },
-          // });
-          //
-          // storage(stream)
-          return of(true);
+          return defer(async () => {
+            return await file;
+          }).pipe(
+            switchMap(({ createReadStream, filename }: FileUpload) => {
+              if (!filename.match(VALIDATORS.IMAGE.formatPattern)) {
+                return throwError(() => ({
+                  error: MESSAGES.FILE.IMG_FORMAT_NOT_ALLOWED,
+                  statusCode: HttpStatus.FORBIDDEN,
+                }));
+              }
+              return defer(async () => {
+                await createReadStream();
+                await createWriteStream(
+                  join(
+                    process.cwd(),
+                    `./src/uploads/${generateFileName(filename)}`,
+                  ),
+                );
+                return true;
+              }).pipe(switchMap((isUploaded: boolean) => of(isUploaded)));
+            }),
+          );
         } else {
-          throw new HttpException(MESSAGES.USER.NO_USER, HttpStatus.FORBIDDEN);
+          return throwError(() => ({
+            error: MESSAGES.USER.NO_USER,
+            statusCode: HttpStatus.FORBIDDEN,
+          }));
         }
       }),
-      catchError((_) => {
-        console.log(_);
+      catchError(({ error, statusCode }: ErrorInterfaceHttpException) => {
         throw new HttpException(
-          MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
-          HttpStatus.FAILED_DEPENDENCY,
+          error || MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
+          statusCode || HttpStatus.FAILED_DEPENDENCY,
         );
       }),
-    )
+    );
   }
 }
