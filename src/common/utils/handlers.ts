@@ -7,5 +7,5 @@ export const generateFileName = (filename) => {
     .fill(null)
     .map(() => Math.round(Math.random() * 16).toString(16))
     .join('');
-  return`${name}-${randomName}${fileExtName}`;
+  return `${name}-${randomName}${fileExtName}`;
 };

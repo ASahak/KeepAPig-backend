@@ -1,7 +1,6 @@
 import { Inject } from '@nestjs/common';
-import { Observable, switchMap, from, of } from 'rxjs';
+import { Observable, switchMap, of } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
-import { extname } from 'path';
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
 import IUser from '@/interfaces/user.interface';
 import UserService from '@/modules/user/user.service';
@@ -24,9 +23,9 @@ export default class UserResolver {
   changePassword(
     @Args('data') data: ChangePasswordDto,
   ): Observable<{ success: boolean }> {
-    return from(this.usersService.changePassword(data)).pipe(
-      switchMap((success: boolean) => of({ success })),
-    );
+    return this.usersService
+      .changePassword(data)
+      .pipe(switchMap((success: boolean) => of({ success })));
   }
 
   @Query(() => FetchUserResponse, { name: 'fetchedUser', nullable: false })
@@ -38,14 +37,14 @@ export default class UserResolver {
 
   @Mutation(() => UploadAvatarResponse, { name: 'uploadedAvatar' })
   uploadAvatar(
-    @Args('data') data: UploadAvatarDto,
+    @Args('data') { file }: UploadAvatarDto,
     @Context() context: any,
   ): Observable<UploadAvatarResponse> {
     const { req } = context;
     const token = req.headers.authorization.split(' ')[1];
     const { sub } = this.jwtTokenService.decode(token);
-    return this.usersService.uploadPicture(data.file, sub).pipe(
-      switchMap((success: boolean) => of({ success }))
-    );
+    return this.usersService
+      .uploadPicture(file, sub)
+      .pipe(switchMap((success: boolean) => of({ success })));
   }
 }

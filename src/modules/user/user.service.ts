@@ -5,7 +5,6 @@ import { switchMap } from 'rxjs/operators';
 import * as bcrypt from 'bcrypt';
 import { createWriteStream } from 'fs';
 import { join } from 'path';
-import { FileUpload } from 'graphql-upload-minimal';
 import { Model, Schema as MongooseSchema } from 'mongoose';
 import { UserDocument, User } from './schema/user.schema';
 import { UserRepository } from '@/repositories/user-repository';
@@ -14,6 +13,7 @@ import ChangePasswordDto from '@/modules/user/dto/change-password.dto';
 import { VALIDATORS, PASSWORD_SALT_ROUNDS, MESSAGES } from '@/common/constants';
 import { ErrorInterfaceHttpException } from '@/interfaces/global.interface';
 import { generateFileName } from '@/common/utils/handlers';
+import { FileUpload } from '@/interfaces/global.interface';
 
 @Injectable()
 export default class UserService {
@@ -119,37 +119,36 @@ export default class UserService {
             return await file;
           }).pipe(
             switchMap(({ createReadStream, filename }: FileUpload) => {
-              return new Observable(observer => {
-                if(!filename.match(VALIDATORS.IMAGE.formatPattern)) {
-                  observer.error(MESSAGES.FILE.IMG_FORMAT_NOT_ALLOWED);
-                } else {
-                  createReadStream()
-                    .pipe(
-                      createWriteStream(
-                        join(process.cwd(), `./src/uploads/${generateFileName(filename)}`),
-                      ),
-                    )
-                    .on('finish', () => {
-                      observer.complete();
-                    })
-                    .on('error', () => {
-                      observer.error(MESSAGES.FILE.IMG_UPLOAD_FAILED);
-                    })
-                }
-              }).pipe(
-                switchMap((isUploaded: boolean) => of(isUploaded)),
-                catchError((errMsg) => {
-                  return throwError(() => ({ error: errMsg, statusCode: HttpStatus.FORBIDDEN }))
-                })
-              )
-            })
+              if (!filename.match(VALIDATORS.IMAGE.formatPattern)) {
+                return throwError(() => ({
+                  error: MESSAGES.FILE.IMG_FORMAT_NOT_ALLOWED,
+                  statusCode: HttpStatus.FORBIDDEN,
+                }));
+              }
+              return defer(async () => {
+                await createReadStream();
+                await createWriteStream(
+                  join(
+                    process.cwd(),
+                    `./src/uploads/${generateFileName(filename)}`,
+                  ),
+                );
+                return true;
+              }).pipe(switchMap((isUploaded: boolean) => of(isUploaded)));
+            }),
           );
         } else {
-          return throwError(() => ({ error: MESSAGES.USER.NO_USER, statusCode: HttpStatus.FORBIDDEN }));
+          return throwError(() => ({
+            error: MESSAGES.USER.NO_USER,
+            statusCode: HttpStatus.FORBIDDEN,
+          }));
         }
       }),
       catchError(({ error, statusCode }: ErrorInterfaceHttpException) => {
-        throw new HttpException(error || MESSAGES.HTTP_EXCEPTION.SMTH_WRONG, statusCode || HttpStatus.FAILED_DEPENDENCY);
+        throw new HttpException(
+          error || MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
+          statusCode || HttpStatus.FAILED_DEPENDENCY,
+        );
       }),
     );
   }
