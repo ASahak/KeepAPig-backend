@@ -14,6 +14,7 @@ export const USER = {
 };
 
 export const FILE = {
+  IMG_MIME_TYPE_FAILURE: 'File type does not match Image requirements.',
   IMG_UPLOAD_FAILED: 'Could not upload image.',
   IMG_FORMAT_NOT_ALLOWED: 'Image format not allowed.',
 };

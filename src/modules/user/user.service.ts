@@ -118,24 +118,32 @@ export default class UserService {
           return defer(async () => {
             return await file;
           }).pipe(
-            switchMap(({ createReadStream, filename }: FileUpload) => {
-              if (!filename.match(VALIDATORS.IMAGE.formatPattern)) {
-                return throwError(() => ({
-                  error: MESSAGES.FILE.IMG_FORMAT_NOT_ALLOWED,
-                  statusCode: HttpStatus.FORBIDDEN,
-                }));
-              }
-              return defer(async () => {
-                await createReadStream();
-                await createWriteStream(
-                  join(
-                    process.cwd(),
-                    `./src/uploads/${generateFileName(filename)}`,
-                  ),
-                );
-                return true;
-              }).pipe(switchMap((isUploaded: boolean) => of(isUploaded)));
-            }),
+            switchMap(
+              ({ createReadStream, filename, mimetype }: FileUpload) => {
+                if (/^image/.test(mimetype)) {
+                  return throwError(() => ({
+                    error: MESSAGES.FILE.IMG_MIME_TYPE_FAILURE,
+                    statusCode: HttpStatus.FORBIDDEN,
+                  }));
+                }
+                if (!filename.match(VALIDATORS.IMAGE.formatPattern)) {
+                  return throwError(() => ({
+                    error: MESSAGES.FILE.IMG_FORMAT_NOT_ALLOWED,
+                    statusCode: HttpStatus.FORBIDDEN,
+                  }));
+                }
+                return defer(async () => {
+                  await createReadStream();
+                  await createWriteStream(
+                    join(
+                      process.cwd(),
+                      `./uploads/${generateFileName(filename)}`,
+                    ),
+                  );
+                  return true;
+                }).pipe(switchMap((isUploaded: boolean) => of(isUploaded)));
+              },
+            ),
           );
         } else {
           return throwError(() => ({
