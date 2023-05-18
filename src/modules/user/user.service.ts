@@ -14,12 +14,14 @@ import { VALIDATORS, PASSWORD_SALT_ROUNDS, MESSAGES } from '@/common/constants';
 import { ErrorInterfaceHttpException } from '@/interfaces/global.interface';
 import { generateFileName } from '@/common/utils/handlers';
 import { FileUpload } from '@/interfaces/global.interface';
+import { CloudinaryService } from '@/modules/cloudinary/cloudinary.service';
 
 @Injectable()
 export default class UserService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private userRepository: UserRepository,
+    private cloudinary: CloudinaryService,
   ) {}
 
   public doesUserExist(params, withUser?): Observable<boolean | User> {
@@ -111,40 +113,55 @@ export default class UserService {
     );
   }
 
-  public uploadPicture(file: any, _id: string): Observable<boolean> {
+  public uploadPicture(file: FileUpload, _id: string): Observable<boolean> {
     return this.doesUserExist({ _id }).pipe(
       switchMap((doesUserExist: boolean) => {
         if (doesUserExist) {
           return defer(async () => {
-            return await file;
+            try {
+              const a = await this.cloudinary.uploadImage(file);
+              console.log(a);
+              return a;
+            } catch (err) {
+              console.log(err);
+            }
           }).pipe(
-            switchMap(
-              ({ createReadStream, filename, mimetype }: FileUpload) => {
-                if (/^image/.test(mimetype)) {
-                  return throwError(() => ({
-                    error: MESSAGES.FILE.IMG_MIME_TYPE_FAILURE,
-                    statusCode: HttpStatus.FORBIDDEN,
-                  }));
-                }
-                if (!filename.match(VALIDATORS.IMAGE.formatPattern)) {
-                  return throwError(() => ({
-                    error: MESSAGES.FILE.IMG_FORMAT_NOT_ALLOWED,
-                    statusCode: HttpStatus.FORBIDDEN,
-                  }));
-                }
-                return defer(async () => {
-                  await createReadStream();
-                  await createWriteStream(
-                    join(
-                      process.cwd(),
-                      `./uploads/${generateFileName(filename)}`,
-                    ),
-                  );
-                  return true;
-                }).pipe(switchMap((isUploaded: boolean) => of(isUploaded)));
-              },
-            ),
+            switchMap((res) => {
+              console.log(res);
+              return of(true);
+            }),
           );
+
+          // return defer(async () => {
+          //   return await file;
+          // }).pipe(
+          //   switchMap(
+          //     ({ createReadStream, filename, mimetype }: FileUpload) => {
+          //       if (/^image/.test(mimetype)) {
+          //         return throwError(() => ({
+          //           error: MESSAGES.FILE.IMG_MIME_TYPE_FAILURE,
+          //           statusCode: HttpStatus.FORBIDDEN,
+          //         }));
+          //       }
+          //       if (!filename.match(VALIDATORS.IMAGE.formatPattern)) {
+          //         return throwError(() => ({
+          //           error: MESSAGES.FILE.IMG_FORMAT_NOT_ALLOWED,
+          //           statusCode: HttpStatus.FORBIDDEN,
+          //         }));
+          //       }
+          //       return defer(async () => {
+          //         await createReadStream();
+          //         await createWriteStream(
+          //           join(
+          //             process.cwd(),
+          //             `./uploads/${generateFileName(filename)}`,
+          //           ),
+          //         );
+          //         return true;
+          //       }).pipe(switchMap((isUploaded: boolean) => of(isUploaded)));
+          //     },
+          //   ),
+          // );
         } else {
           return throwError(() => ({
             error: MESSAGES.USER.NO_USER,
