@@ -3,16 +3,16 @@ import { InjectModel } from '@nestjs/mongoose';
 import { from, map, of, Observable, catchError, defer, throwError } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import * as bcrypt from 'bcrypt';
-// import { createWriteStream } from 'fs';
-// import { join } from 'path';
+import { createWriteStream } from 'fs';
+import { join } from 'path';
 import { Model, Schema as MongooseSchema } from 'mongoose';
 import { UserDocument, User } from './schema/user.schema';
 import { UserRepository } from '@/repositories/user-repository';
 import FetchUserDto from '@/modules/user/dto/fetch-user.dto';
 import ChangePasswordDto from '@/modules/user/dto/change-password.dto';
-import { PASSWORD_SALT_ROUNDS, MESSAGES } from '@/common/constants';
+import { PASSWORD_SALT_ROUNDS, MESSAGES, VALIDATORS } from '@/common/constants';
 import { ErrorInterfaceHttpException } from '@/interfaces/global.interface';
-// import { generateFileName } from '@/common/utils/handlers';
+import { generateFileName } from '@/common/utils/handlers';
 import { FileUpload } from '@/interfaces/global.interface';
 import { CloudinaryService } from '@/modules/cloudinary/cloudinary.service';
 
@@ -113,55 +113,61 @@ export default class UserService {
     );
   }
 
-  public uploadPicture(file: FileUpload, _id: string): Observable<boolean> {
+  public uploadPicture(
+    file: FileUpload,
+    _id: string,
+  ): Observable<{ success: boolean; secure_url?: string }> {
     return this.doesUserExist({ _id }).pipe(
       switchMap((doesUserExist: boolean) => {
         if (doesUserExist) {
           return defer(async () => {
-            try {
-              const a = await this.cloudinary.uploadImage(file);
-              console.log(a);
-              return a;
-            } catch (err) {
-              console.log(err);
-            }
+            return await file;
           }).pipe(
-            switchMap((res) => {
-              console.log(res);
-              return of(true);
-            }),
+            switchMap(
+              ({ createReadStream, filename, mimetype }: FileUpload) => {
+                if (!/^image/.test(mimetype)) {
+                  return throwError(() => ({
+                    error: MESSAGES.FILE.IMG_MIME_TYPE_FAILURE,
+                    statusCode: HttpStatus.BAD_REQUEST,
+                  }));
+                }
+                if (!filename.match(VALIDATORS.IMAGE.formatPattern)) {
+                  return throwError(() => ({
+                    error: MESSAGES.FILE.IMG_FORMAT_NOT_ALLOWED,
+                    statusCode: HttpStatus.BAD_REQUEST,
+                  }));
+                }
+                return defer(async () => {
+                  try {
+                    const path: string = await new Promise((res, rej) => {
+                      const _path = join(
+                        process.cwd(),
+                        `./uploads/${generateFileName(filename)}`,
+                      );
+                      createReadStream()
+                        .pipe(createWriteStream(_path))
+                        .on('finish', () => res(_path))
+                        .on('error', () =>
+                          rej(MESSAGES.FILE.IMG_FORMAT_NOT_ALLOWED),
+                        );
+                    });
+                    const result = await this.cloudinary.uploadImage(path);
+                    return { success: true, secure_url: result.secure_url };
+                  } catch (err) {
+                    throwError(() => ({
+                      error: err.message,
+                      statusCode: HttpStatus.BAD_REQUEST,
+                    }));
+                    return { success: false };
+                  }
+                }).pipe(
+                  switchMap(({ success, secure_url }) =>
+                    of({ success, secure_url }),
+                  ),
+                );
+              },
+            ),
           );
-
-          // return defer(async () => {
-          //   return await file;
-          // }).pipe(
-          //   switchMap(
-          //     ({ createReadStream, filename, mimetype }: FileUpload) => {
-          //       if (/^image/.test(mimetype)) {
-          //         return throwError(() => ({
-          //           error: MESSAGES.FILE.IMG_MIME_TYPE_FAILURE,
-          //           statusCode: HttpStatus.FORBIDDEN,
-          //         }));
-          //       }
-          //       if (!filename.match(VALIDATORS.IMAGE.formatPattern)) {
-          //         return throwError(() => ({
-          //           error: MESSAGES.FILE.IMG_FORMAT_NOT_ALLOWED,
-          //           statusCode: HttpStatus.FORBIDDEN,
-          //         }));
-          //       }
-          //       return defer(async () => {
-          //         await createReadStream();
-          //         await createWriteStream(
-          //           join(
-          //             process.cwd(),
-          //             `./uploads/${generateFileName(filename)}`,
-          //           ),
-          //         );
-          //         return true;
-          //       }).pipe(switchMap((isUploaded: boolean) => of(isUploaded)));
-          //     },
-          //   ),
-          // );
         } else {
           return throwError(() => ({
             error: MESSAGES.USER.NO_USER,

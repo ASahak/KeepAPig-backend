@@ -45,6 +45,10 @@ export default class UserResolver {
     const { sub } = this.jwtTokenService.decode(token);
     return this.usersService
       .uploadPicture(file, sub)
-      .pipe(switchMap((success: boolean) => of({ success, avatarSrc: '' })));
+      .pipe(
+        switchMap(({ success, secure_url }) =>
+          of({ success, avatarSrc: secure_url }),
+        ),
+      );
   }
 }
