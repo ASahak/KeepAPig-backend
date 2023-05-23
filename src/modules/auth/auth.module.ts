@@ -13,6 +13,7 @@ import GoogleStrategy from '@/modules/auth/strategies/google.strategy';
 import GoogleAuthResolver from '@/modules/auth/oauth/google/google-auth.resolver';
 import SessionSerializer from '@/modules/auth/serializers/session.serializer';
 import { UserRepository } from '@/repositories/user-repository';
+import { CloudinaryModule } from '@/modules/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { UserRepository } from '@/repositories/user-repository';
     ConfigModule.forFeature(JwtConfig),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
+    CloudinaryModule,
   ],
   providers: [
     UserRepository,

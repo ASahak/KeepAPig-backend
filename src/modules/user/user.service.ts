@@ -10,16 +10,18 @@ import { UserDocument, User } from './schema/user.schema';
 import { UserRepository } from '@/repositories/user-repository';
 import FetchUserDto from '@/modules/user/dto/fetch-user.dto';
 import ChangePasswordDto from '@/modules/user/dto/change-password.dto';
-import { VALIDATORS, PASSWORD_SALT_ROUNDS, MESSAGES } from '@/common/constants';
+import { PASSWORD_SALT_ROUNDS, MESSAGES, VALIDATORS } from '@/common/constants';
 import { ErrorInterfaceHttpException } from '@/interfaces/global.interface';
 import { generateFileName } from '@/common/utils/handlers';
 import { FileUpload } from '@/interfaces/global.interface';
+import { CloudinaryService } from '@/modules/cloudinary/cloudinary.service';
 
 @Injectable()
 export default class UserService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private userRepository: UserRepository,
+    private cloudinary: CloudinaryService,
   ) {}
 
   public doesUserExist(params, withUser?): Observable<boolean | User> {
@@ -111,7 +113,10 @@ export default class UserService {
     );
   }
 
-  public uploadPicture(file: any, _id: string): Observable<boolean> {
+  public uploadPicture(
+    file: FileUpload,
+    _id: string,
+  ): Observable<{ success: boolean; secure_url?: string }> {
     return this.doesUserExist({ _id }).pipe(
       switchMap((doesUserExist: boolean) => {
         if (doesUserExist) {
@@ -120,28 +125,46 @@ export default class UserService {
           }).pipe(
             switchMap(
               ({ createReadStream, filename, mimetype }: FileUpload) => {
-                if (/^image/.test(mimetype)) {
+                if (!/^image/.test(mimetype)) {
                   return throwError(() => ({
                     error: MESSAGES.FILE.IMG_MIME_TYPE_FAILURE,
-                    statusCode: HttpStatus.FORBIDDEN,
+                    statusCode: HttpStatus.BAD_REQUEST,
                   }));
                 }
                 if (!filename.match(VALIDATORS.IMAGE.formatPattern)) {
                   return throwError(() => ({
                     error: MESSAGES.FILE.IMG_FORMAT_NOT_ALLOWED,
-                    statusCode: HttpStatus.FORBIDDEN,
+                    statusCode: HttpStatus.BAD_REQUEST,
                   }));
                 }
                 return defer(async () => {
-                  await createReadStream();
-                  await createWriteStream(
-                    join(
-                      process.cwd(),
-                      `./uploads/${generateFileName(filename)}`,
-                    ),
-                  );
-                  return true;
-                }).pipe(switchMap((isUploaded: boolean) => of(isUploaded)));
+                  try {
+                    const path: string = await new Promise((res, rej) => {
+                      const _path = join(
+                        process.cwd(),
+                        `./uploads/${generateFileName(filename)}`,
+                      );
+                      createReadStream()
+                        .pipe(createWriteStream(_path))
+                        .on('finish', () => res(_path))
+                        .on('error', () =>
+                          rej(MESSAGES.FILE.IMG_FORMAT_NOT_ALLOWED),
+                        );
+                    });
+                    const result = await this.cloudinary.uploadImage(path);
+                    return { success: true, secure_url: result.secure_url };
+                  } catch (err) {
+                    throwError(() => ({
+                      error: err.message,
+                      statusCode: HttpStatus.BAD_REQUEST,
+                    }));
+                    return { success: false };
+                  }
+                }).pipe(
+                  switchMap(({ success, secure_url }) =>
+                    of({ success, secure_url }),
+                  ),
+                );
               },
             ),
           );
