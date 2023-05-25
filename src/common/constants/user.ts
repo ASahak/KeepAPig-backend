@@ -1,0 +1,5 @@
+export enum USER_AVATAR_METADATA {
+  HEIGHT = 200,
+  WIDTH = 200,
+  QUALITY = 100,
+}

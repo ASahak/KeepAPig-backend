@@ -3,14 +3,21 @@ import { InjectModel } from '@nestjs/mongoose';
 import { from, map, of, Observable, catchError, defer, throwError } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import * as bcrypt from 'bcrypt';
-import { createWriteStream } from 'fs';
+import { createWriteStream, mkdtempSync } from 'fs';
+import { tmpdir } from 'os';
 import { join } from 'path';
 import { Model, Schema as MongooseSchema } from 'mongoose';
+import * as sharp from 'sharp';
 import { UserDocument, User } from './schema/user.schema';
 import { UserRepository } from '@/repositories/user-repository';
 import FetchUserDto from '@/modules/user/dto/fetch-user.dto';
 import ChangePasswordDto from '@/modules/user/dto/change-password.dto';
-import { PASSWORD_SALT_ROUNDS, MESSAGES, VALIDATORS } from '@/common/constants';
+import {
+  PASSWORD_SALT_ROUNDS,
+  MESSAGES,
+  VALIDATORS,
+  USER_AVATAR_METADATA,
+} from '@/common/constants';
 import { ErrorInterfaceHttpException } from '@/interfaces/global.interface';
 import { generateFileName } from '@/common/utils/handlers';
 import { FileUpload } from '@/interfaces/global.interface';
@@ -140,13 +147,31 @@ export default class UserService {
                 return defer(async () => {
                   try {
                     const path: string = await new Promise((res, rej) => {
-                      const _path = join(
+                      const tempUploads: string = mkdtempSync(
+                        join(tmpdir(), 'temp-uploads-'),
+                      );
+                      const fileName: string = generateFileName(filename);
+                      const tempPath: string = join(tempUploads, fileName);
+                      const _path: string = join(
                         process.cwd(),
-                        `./uploads/${generateFileName(filename)}`,
+                        `./uploads/${fileName}`,
                       );
                       createReadStream()
-                        .pipe(createWriteStream(_path))
-                        .on('finish', () => res(_path))
+                        .pipe(createWriteStream(tempPath))
+                        .on('finish', async () => {
+                          try {
+                            await sharp(tempPath)
+                              .resize({
+                                width: USER_AVATAR_METADATA.WIDTH,
+                                height: USER_AVATAR_METADATA.HEIGHT,
+                              })
+                              .webp({ quality: USER_AVATAR_METADATA.QUALITY })
+                              .toFile(_path);
+                            res(_path);
+                          } catch (err) {
+                            rej(MESSAGES.FILE.IMG_COULD_NOT_BE_RESIZED);
+                          }
+                        })
                         .on('error', () =>
                           rej(MESSAGES.FILE.IMG_FORMAT_NOT_ALLOWED),
                         );
