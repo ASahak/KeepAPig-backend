@@ -120,6 +120,34 @@ export default class UserService {
     );
   }
 
+  public deletePicture(
+    _id: string | MongooseSchema.Types.ObjectId,
+  ): Observable<boolean> {
+    return this.doesUserExist({ _id }, true).pipe(
+      switchMap((user: User) => {
+        if (user) {
+          return this.updateUser(_id, { avatar: '' }).pipe(
+            switchMap((_) => of(true)),
+            catchError((_) => {
+              throw new HttpException(
+                MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
+                HttpStatus.FAILED_DEPENDENCY,
+              );
+            }),
+          );
+        } else {
+          throw new HttpException(MESSAGES.USER.NO_USER, HttpStatus.FORBIDDEN);
+        }
+      }),
+      catchError((_) => {
+        throw new HttpException(
+          MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
+          HttpStatus.FAILED_DEPENDENCY,
+        );
+      }),
+    );
+  }
+
   public uploadPicture(
     file: FileUpload,
     _id: string,
