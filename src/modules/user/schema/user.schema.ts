@@ -19,6 +19,10 @@ class BasicUserModel extends Document {
   @Field(() => String)
   @Prop({ required: false })
   avatar?: string;
+
+  @Field(() => Boolean)
+  @Prop({ required: false })
+  isEnabledTwoFactorAuth?: boolean;
 }
 
 @ObjectType()
