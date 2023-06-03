@@ -1,7 +1,7 @@
 import { getDb } from '../migrations-utils/db';
 
 export const up = async () => {
-  // @typescript-eslint/no-unused-vars
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const db = await getDb();
   return db
     .collection('users')
@@ -9,6 +9,6 @@ export const up = async () => {
 };
 
 export const down = async () => {
-  // @typescript-eslint/no-unused-vars
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const db = await getDb();
 };
