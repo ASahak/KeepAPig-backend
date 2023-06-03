@@ -7,6 +7,7 @@ import UserService from '@/modules/user/user.service';
 import FetchUserResponse from '@/modules/user/responses/fetch-user.response';
 import ChangePasswordResponse from '@/modules/user/responses/change-password.response';
 import UploadAvatarResponse from '@/modules/user/responses/upload-avatar.response';
+import DeleteAvatarResponse from '@/modules/user/responses/delete-avatar.response';
 import FetchUserDto from '@/modules/user/dto/fetch-user.dto';
 import ChangePasswordDto from '@/modules/user/dto/change-password.dto';
 import UploadAvatarDto from '@/modules/user/dto/upload-avatar.dto';
@@ -52,5 +53,15 @@ export default class UserResolver {
         );
       }),
     );
+  }
+
+  @Mutation(() => DeleteAvatarResponse, { name: 'deleteAvatar' })
+  deleteAvatar(@Context() context: any): Observable<DeleteAvatarResponse> {
+    const { req } = context;
+    const token = req.headers.authorization.split(' ')[1];
+    const { sub } = this.jwtTokenService.decode(token);
+    return this.usersService
+      .deletePicture(sub)
+      .pipe(switchMap((res: boolean) => of({ success: res })));
   }
 }

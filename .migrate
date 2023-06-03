@@ -1,0 +1,9 @@
+{
+  "lastRun": "1685827662361-two-factor-auth.ts",
+  "migrations": [
+    {
+      "title": "1685827662361-two-factor-auth.ts",
+      "timestamp": 1685827693020
+    }
+  ]
+}
