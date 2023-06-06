@@ -7,7 +7,8 @@ import { PASSWORD_SALT_ROUNDS } from '@/common/constants';
 import { GoogleIUser } from '@/interfaces/user.interface';
 
 @ObjectType()
-class BasicUserModel extends Document {
+export class BasicUserModel extends Document {
+  // If we are gonna to update this model, we should update teh InputTYpe as well in the update.user.response.ts
   @Field(() => String)
   @Prop({ required: true })
   fullName: string;
