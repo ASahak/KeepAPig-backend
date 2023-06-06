@@ -9,6 +9,7 @@ export default interface IUser {
   resetPasswordToken?: string;
   role: keyof typeof USER_ROLES;
   google?: GoogleIUser;
+  isEnabledTwoFactorAuth?: boolean;
 }
 
 export interface GoogleIUser {

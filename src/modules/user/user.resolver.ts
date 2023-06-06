@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject } from '@nestjs/common';
 import { Observable, switchMap, of } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
@@ -11,6 +11,10 @@ import DeleteAvatarResponse from '@/modules/user/responses/delete-avatar.respons
 import FetchUserDto from '@/modules/user/dto/fetch-user.dto';
 import ChangePasswordDto from '@/modules/user/dto/change-password.dto';
 import UploadAvatarDto from '@/modules/user/dto/upload-avatar.dto';
+import UpdateUserResponse from '@/modules/user/responses/update-user.response';
+import UpdateUserDto from '@/modules/user/dto/update-user.dto';
+import { User } from '@/modules/user/schema/user.schema';
+import { MESSAGES } from '@/common/constants';
 
 @Resolver('User')
 export default class UserResolver {
@@ -51,6 +55,27 @@ export default class UserResolver {
             return of({ success, avatarSrc: secure_url });
           }),
         );
+      }),
+    );
+  }
+
+  @Mutation(() => UpdateUserResponse, { name: 'updateUser' })
+  updateUser(
+    @Args('data') data: UpdateUserDto,
+  ): Observable<UpdateUserResponse> {
+    return this.usersService.doesUserExist({ _id: data._id }).pipe(
+      switchMap((exist: boolean) => {
+        if (exist) {
+          return this.usersService
+            .updateUser(data._id, { ...data.payload })
+            .pipe(
+              switchMap((_) => {
+                return of({ success: true });
+              }),
+            );
+        } else {
+          throw new HttpException(MESSAGES.USER.NO_USER, HttpStatus.FORBIDDEN);
+        }
       }),
     );
   }
