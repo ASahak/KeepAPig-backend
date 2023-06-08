@@ -13,7 +13,6 @@ import ChangePasswordDto from '@/modules/user/dto/change-password.dto';
 import UploadAvatarDto from '@/modules/user/dto/upload-avatar.dto';
 import UpdateUserResponse from '@/modules/user/responses/update-user.response';
 import UpdateUserDto from '@/modules/user/dto/update-user.dto';
-import { User } from '@/modules/user/schema/user.schema';
 import { MESSAGES } from '@/common/constants';
 
 @Resolver('User')
