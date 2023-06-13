@@ -1,9 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { from, map, of, Observable, catchError, defer, throwError } from 'rxjs';
+import { ConfigService } from '@nestjs/config';
 import { switchMap } from 'rxjs/operators';
+import { toDataURL } from 'qrcode';
 import * as bcrypt from 'bcrypt';
 import { createWriteStream, mkdtempSync } from 'fs';
+import { authenticator } from 'otplib';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { Model, Schema as MongooseSchema } from 'mongoose';
@@ -29,6 +32,7 @@ export default class UserService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private userRepository: UserRepository,
     private cloudinary: CloudinaryService,
+    private readonly configService: ConfigService,
   ) {}
 
   public doesUserExist(params, withUser?): Observable<boolean | User> {
@@ -150,7 +154,7 @@ export default class UserService {
 
   public uploadPicture(
     file: FileUpload,
-    _id: string,
+    _id: string | MongooseSchema.Types.ObjectId,
   ): Observable<{ success: boolean; secure_url?: string }> {
     return this.doesUserExist({ _id }).pipe(
       switchMap((doesUserExist: boolean) => {
@@ -220,6 +224,44 @@ export default class UserService {
                 );
               },
             ),
+          );
+        } else {
+          return throwError(() => ({
+            error: MESSAGES.USER.NO_USER,
+            statusCode: HttpStatus.FORBIDDEN,
+          }));
+        }
+      }),
+      catchError(({ error, statusCode }: ErrorInterfaceHttpException) => {
+        throw new HttpException(
+          error || MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
+          statusCode || HttpStatus.FAILED_DEPENDENCY,
+        );
+      }),
+    );
+  }
+
+  public create2faSecret(
+    _id: string | MongooseSchema.Types.ObjectId,
+  ): Observable<{ otpAuthUrl: string }> {
+    return this.doesUserExist({ _id }, true).pipe(
+      switchMap((user: User) => {
+        if (user) {
+          const secret: string = authenticator.generateSecret();
+          const otpAuthUrl: string = authenticator.keyuri(
+            user.email,
+            this.configService.get('jwt.appName2fa'),
+            secret,
+          );
+
+          return defer(async () => {
+            return await toDataURL(otpAuthUrl);
+          }).pipe(
+            switchMap((res) => {
+              return this.updateUser(_id, {
+                twoFactorAuthenticationSecret: secret,
+              }).pipe(switchMap(() => of({ otpAuthUrl: res })));
+            }),
           );
         } else {
           return throwError(() => ({
