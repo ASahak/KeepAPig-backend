@@ -6,6 +6,7 @@ export const SEND_EMAIL = {
 };
 
 export const USER = {
+  WRONG_AUTH_CODE: 'Wrong authentication code!',
   USER_EXIST: 'A user has already been created with this email address.',
   USER_DOES_NOT_EXIST: "User doesn't exist!",
   USER_PASSWORD_OR_EMAIL_IS_WRONG: 'User e-mail or password is wrong.',
