@@ -12,8 +12,10 @@ import FetchUserDto from '@/modules/user/dto/fetch-user.dto';
 import ChangePasswordDto from '@/modules/user/dto/change-password.dto';
 import Get2faSecretDto from '@/modules/user/dto/get-2fa-secret.dto';
 import UploadAvatarDto from '@/modules/user/dto/upload-avatar.dto';
+import VerifyAuthCodeDto from '@/modules/user/dto/verify-auth-code.dto';
 import UpdateUserResponse from '@/modules/user/responses/update-user.response';
 import Get2faSecretResponse from '@/modules/user/responses/get-2fa-secret.response';
+import VerifyAuthCodeResponse from '@/modules/user/responses/verify-auth-code.response';
 import UpdateUserDto from '@/modules/user/dto/update-user.dto';
 import { MESSAGES } from '@/common/constants';
 
@@ -98,5 +100,14 @@ export default class UserResolver {
     return this.usersService
       .create2faSecret(data._id)
       .pipe(switchMap(({ otpAuthUrl }) => of({ otpAuthUrl })));
+  }
+
+  @Query(() => VerifyAuthCodeResponse, { name: 'verifiedAuthCode' })
+  verifyAuthCode(
+    @Args('data') data: VerifyAuthCodeDto,
+  ): Observable<VerifyAuthCodeResponse> {
+    return this.usersService
+      .verifyAuthCode(data)
+      .pipe(switchMap(({ success }) => of({ success })));
   }
 }

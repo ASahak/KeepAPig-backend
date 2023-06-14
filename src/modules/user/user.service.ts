@@ -25,6 +25,7 @@ import { ErrorInterfaceHttpException } from '@/interfaces/global.interface';
 import { generateFileName } from '@/common/utils/handlers';
 import { FileUpload } from '@/interfaces/global.interface';
 import { CloudinaryService } from '@/modules/cloudinary/cloudinary.service';
+import VerifyAuthCodeDto from '@/modules/user/dto/verify-auth-code.dto';
 
 @Injectable()
 export default class UserService {
@@ -263,6 +264,40 @@ export default class UserService {
               }).pipe(switchMap(() => of({ otpAuthUrl: res })));
             }),
           );
+        } else {
+          return throwError(() => ({
+            error: MESSAGES.USER.NO_USER,
+            statusCode: HttpStatus.FORBIDDEN,
+          }));
+        }
+      }),
+      catchError(({ error, statusCode }: ErrorInterfaceHttpException) => {
+        throw new HttpException(
+          error || MESSAGES.HTTP_EXCEPTION.SMTH_WRONG,
+          statusCode || HttpStatus.FAILED_DEPENDENCY,
+        );
+      }),
+    );
+  }
+
+  public verifyAuthCode({
+    _id,
+    code,
+  }: VerifyAuthCodeDto): Observable<{ success: boolean }> {
+    return this.doesUserExist({ _id }, true).pipe(
+      switchMap((user: User) => {
+        if (user) {
+          const isCodeValid: boolean = authenticator.verify({
+            token: code,
+            secret: user.twoFactorAuthenticationSecret,
+          });
+          if (!isCodeValid) {
+            return throwError(() => ({
+              error: MESSAGES.USER.WRONG_AUTH_CODE,
+              statusCode: HttpStatus.FORBIDDEN,
+            }));
+          }
+          return of({ success: true });
         } else {
           return throwError(() => ({
             error: MESSAGES.USER.NO_USER,
