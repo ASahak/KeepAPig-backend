@@ -2,7 +2,7 @@ import { Inject } from '@nestjs/common';
 import { Resolver, Mutation, Args } from '@nestjs/graphql';
 import { Observable, switchMap, map } from 'rxjs';
 import AuthService from '@/modules/auth/auth.service';
-import AuthUserResponse from '@/modules/auth/responses/auth-user.response';
+import { AuthUserResponse } from '@/modules/auth/responses/auth-user.response';
 import { CreateGoogleUserDto } from '@/modules/user/dto/create-user.dto';
 import IUser from '@/interfaces/user.interface';
 

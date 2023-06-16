@@ -25,6 +25,10 @@ export class BasicUserModel extends Document {
   @Prop({ required: false })
   isEnabledTwoFactorAuth?: boolean;
 
+  @Field(() => Boolean)
+  @Prop({ required: false })
+  isVerifiedTwoFactorAuth?: boolean;
+
   @Field(() => String)
   @Prop({ required: false })
   twoFactorAuthenticationSecret?: string;

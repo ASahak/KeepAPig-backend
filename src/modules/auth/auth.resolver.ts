@@ -1,8 +1,8 @@
 import { Inject } from '@nestjs/common';
 import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
-import { Observable, switchMap, map } from 'rxjs';
+import { Observable, switchMap, map, of } from 'rxjs';
 import AuthService from '@/modules/auth/auth.service';
-import AuthUserResponse from '@/modules/auth/responses/auth-user.response';
+import { AuthUserResponse } from '@/modules/auth/responses/auth-user.response';
 import CreateUserDto from '@/modules/user/dto/create-user.dto';
 import IUser from '@/interfaces/user.interface';
 import SignInUserDto from '@/modules/user/dto/sign-in-user.dto';
@@ -30,7 +30,10 @@ export default class AuthResolver {
   @Query(() => AuthUserResponse, { name: 'loggedUser' })
   signIn(@Args('data') user: SignInUserDto): Observable<AuthUserResponse> {
     return this.authService.login(user).pipe(
-      switchMap((result) => {
+      switchMap((result: IUser & { notVerified: boolean }) => {
+        if (result.notVerified) {
+          return of(new AuthUserResponse({ notVerified: true }));
+        }
         return this.authService
           .signInToken({ ...result, rememberMe: user.rememberMe })
           .pipe(map((authUser: AuthUserResponse) => authUser));
