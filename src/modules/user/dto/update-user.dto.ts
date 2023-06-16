@@ -20,6 +20,10 @@ class UserInput {
   @Field(() => Boolean, { nullable: true })
   @Prop({ required: false })
   isEnabledTwoFactorAuth?: boolean;
+
+  @Field(() => Boolean, { nullable: true })
+  @Prop({ required: false })
+  isVerifiedTwoFactorAuth?: boolean;
 }
 
 @InputType()

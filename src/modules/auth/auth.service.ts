@@ -15,7 +15,7 @@ import IUser, {
   UserJwtPayload,
   GoogleIUser,
 } from '@/interfaces//user.interface';
-import AuthUserResponse from './responses/auth-user.response';
+import { AuthUserResponse } from './responses/auth-user.response';
 import { UserRepository } from '@/repositories/user-repository';
 import { MESSAGES } from '@/common/constants';
 
@@ -96,7 +96,9 @@ export default class AuthService {
     );
   };
 
-  public login(signInUserDto: SignInUserDto): Observable<IUser> {
+  public login(
+    signInUserDto: SignInUserDto,
+  ): Observable<IUser | { notVerified: boolean }> {
     return this.userService
       .doesUserExist({ email: signInUserDto.email }, true)
       .pipe(
@@ -111,7 +113,19 @@ export default class AuthService {
                     this.userRepository.find({
                       email: signInUserDto.email,
                     }),
-                  ).pipe(map((user) => user));
+                  ).pipe(
+                    map((user) => {
+                      if (user.isEnabledTwoFactorAuth) {
+                        if (user.isVerifiedTwoFactorAuth) {
+                          return user;
+                        } else {
+                          return { notVerified: true };
+                        }
+                      } else {
+                        return user;
+                      }
+                    }),
+                  );
                 } else {
                   throw MESSAGES.USER.USER_PASSWORD_OR_EMAIL_IS_WRONG;
                 }

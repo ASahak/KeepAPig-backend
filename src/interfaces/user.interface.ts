@@ -10,6 +10,8 @@ export default interface IUser {
   role: keyof typeof USER_ROLES;
   google?: GoogleIUser;
   isEnabledTwoFactorAuth?: boolean;
+  isVerifiedTwoFactorAuth?: boolean;
+  twoFactorAuthenticationSecret?: string;
 }
 
 export interface GoogleIUser {
