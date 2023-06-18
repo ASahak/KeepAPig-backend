@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Observable, of, from, catchError } from 'rxjs';
+import { Observable, of, from, catchError, defer } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -114,15 +114,19 @@ export default class AuthService {
                       email: signInUserDto.email,
                     }),
                   ).pipe(
-                    map((user) => {
+                    switchMap((user) => {
                       if (user.isEnabledTwoFactorAuth) {
                         if (user.isVerifiedTwoFactorAuth) {
-                          return user;
+                          return this.userService
+                            .updateUser(user._id, {
+                              isVerifiedTwoFactorAuth: false,
+                            })
+                            .pipe(switchMap(() => of(user)));
                         } else {
-                          return { notVerified: true };
+                          return of({ notVerified: true });
                         }
                       } else {
-                        return user;
+                        return of(user);
                       }
                     }),
                   );

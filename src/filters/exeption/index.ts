@@ -60,6 +60,7 @@ export default class AllExceptionsFilter
         ...errorResponse,
         type: info.parentType,
         field: info.fieldName,
+        data: info.variableValues,
       };
 
       Logger.error(
