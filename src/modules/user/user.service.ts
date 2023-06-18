@@ -25,7 +25,7 @@ import { ErrorInterfaceHttpException } from '@/interfaces/global.interface';
 import { generateFileName } from '@/common/utils/handlers';
 import { FileUpload } from '@/interfaces/global.interface';
 import { CloudinaryService } from '@/modules/cloudinary/cloudinary.service';
-import VerifyAuthCodeDto from '@/modules/user/dto/verify-auth-code.dto';
+import VerifyUserDto from '@/modules/user/dto/verify-user.dto';
 
 @Injectable()
 export default class UserService {
@@ -281,10 +281,11 @@ export default class UserService {
   }
 
   public verifyAuthCode({
-    _id,
+    email,
     code,
-  }: VerifyAuthCodeDto): Observable<{ success: boolean }> {
-    return this.doesUserExist({ _id }, true).pipe(
+    returnUser,
+  }: VerifyUserDto): Observable<{ success: boolean; user?: User }> {
+    return this.doesUserExist({ email }, true).pipe(
       switchMap((user: User) => {
         if (user) {
           const isCodeValid: boolean = authenticator.verify({
@@ -297,7 +298,7 @@ export default class UserService {
               statusCode: HttpStatus.FORBIDDEN,
             }));
           }
-          return of({ success: true });
+          return of({ success: true, ...(returnUser ? { user } : {}) });
         } else {
           return throwError(() => ({
             error: MESSAGES.USER.NO_USER,
